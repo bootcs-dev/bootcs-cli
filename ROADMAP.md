@@ -71,31 +71,31 @@
 
 ---
 
-## Phase 3: 认证功能实现 (Day 4)
+## Phase 3: 认证功能实现 (Day 4) ✅ 已完成
 
 ### 3.1 凭证管理
 
-- [ ] 创建 `bootcs/auth/credentials.py`
-- [ ] 实现凭证存储 (`~/.bootcs/credentials.yaml`)
-- [ ] 实现 `get_token()`, `save_token()`, `clear_token()`
+- [x] 创建 `bootcs/auth/credentials.py`
+- [x] 实现凭证存储 (`~/.bootcs/credentials.yaml`)
+- [x] 实现 `get_token()`, `save_token()`, `clear_token()`
 
 ### 3.2 Device Flow
 
-- [ ] 创建 `bootcs/auth/device_flow.py`
-- [ ] 实现 GitHub Device Flow 客户端
-- [ ] 对接 bootcs-api `/api/auth/device/*`
+- [x] 创建 `bootcs/auth/device_flow.py`
+- [x] 实现 GitHub Device Flow 客户端
+- [x] 对接 bootcs-api `/api/auth/device/*`
 
 ### 3.3 CLI 命令
 
-- [ ] 实现 `bootcs login`
-- [ ] 实现 `bootcs logout`
-- [ ] 实现 `bootcs whoami`
+- [x] 实现 `bootcs login`
+- [x] 实现 `bootcs logout`
+- [x] 实现 `bootcs whoami`
 
 ### 3.4 测试验证
 
-- [ ] 完整 login 流程测试
-- [ ] 凭证持久化测试
-- [ ] logout 清除凭证测试
+- [x] 完整 login 流程测试
+- [x] 凭证持久化测试
+- [x] logout 清除凭证测试
 
 ---
 
