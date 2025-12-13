@@ -112,10 +112,11 @@ def run_check(args):
     if not included:
         termcolor.cprint("Warning: No files found to check", "yellow", file=sys.stderr)
     
-    # Print header
-    print()
-    termcolor.cprint(f"🔍 Running checks for {slug}...", "cyan", attrs=["bold"])
-    print()
+    # Print header (skip in JSON mode for clean output)
+    if args.output != "json":
+        print()
+        termcolor.cprint(f"🔍 Running checks for {slug}...", "cyan", attrs=["bold"])
+        print()
     
     # Run checks
     targets = args.target if hasattr(args, 'target') and args.target else None
