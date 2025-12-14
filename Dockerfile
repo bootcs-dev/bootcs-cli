@@ -11,6 +11,7 @@ LABEL org.opencontainers.image.licenses="GPL-3.0"
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     clang \
+    curl \
     gcc \
     git \
     make \
