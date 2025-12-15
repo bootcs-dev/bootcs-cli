@@ -11,177 +11,151 @@ BootCS 命令行工具 - 用于代码检查和提交
 - ✅ **代码检查** - 本地运行检查脚本验证代码正确性
 - ✅ **GitHub 登录** - 使用 Device Flow 进行 GitHub 认证
 - ✅ **代码提交** - 将代码提交到 BootCS 平台进行评测
-
-## 许可证
-
-本项目基于 GPL-3.0 许可证发布，遵循 check50/lib50 的许可证要求。
+- ✅ **远程 Checks** - 自动从服务器下载检查脚本
+- ✅ **多语言支持** - 自动检测 C、Python 等编程语言
+- ✅ **缓存管理** - 本地缓存检查脚本，提高效率
 
 ## 安装
 
-### 方式一：Python 安装
+### 推荐方式：从 GitHub 安装
 
-```bash
-# 开发模式安装
+\`\`\`bash
+pip install git+https://github.com/bootcs-cn/bootcs-cli.git
+\`\`\`
+
+### 开发模式安装
+
+\`\`\`bash
 git clone https://github.com/bootcs-cn/bootcs-cli.git
 cd bootcs-cli
 python -m venv .venv
 source .venv/bin/activate
 pip install -e .
-```
-
-### 方式二：Docker 镜像
-
-```bash
-# 拉取基础镜像
-docker pull ghcr.io/bootcs-cn/bootcs-cli:latest
-
-# 拉取包含 CS50 检查脚本的镜像
-docker pull ghcr.io/bootcs-cn/bootcs-cli:cs50
-```
+\`\`\`
 
 ## 快速开始
 
 ### 1. 登录
 
-```bash
+\`\`\`bash
 bootcs login
-```
+\`\`\`
 
 按照提示访问 GitHub 并输入验证码完成登录。
 
 ### 2. 检查代码
 
-```bash
-# 检查当前目录的代码
-bootcs check cs50/hello --local /path/to/checks/hello
+\`\`\`bash
+# 进入你的代码目录
+cd ~/projects/hello
+
+# 检查代码（自动下载 checks，自动检测语言）
+bootcs check cs50/hello
+
+# 指定语言
+bootcs check cs50/hello -L python
+
+# 强制更新 checks
+bootcs check cs50/hello -u
 
 # 输出 JSON 格式
-bootcs check cs50/hello --local /path/to/checks --output json
-
-# 显示详细日志
-bootcs check cs50/hello --local /path/to/checks --log
-```
+bootcs check cs50/hello --output json
+\`\`\`
 
 ### 3. 提交代码
 
-```bash
+\`\`\`bash
 # 提交代码到 BootCS 平台
-bootcs submit cs50/hello --local /path/to/checks/hello
+bootcs submit cs50/hello
 
 # 跳过确认
-bootcs submit cs50/hello --local /path/to/checks/hello -y
+bootcs submit cs50/hello -y
 
 # 自定义提交消息
-bootcs submit cs50/hello --local /path/to/checks/hello -m "Fix bug"
-```
+bootcs submit cs50/hello -m "Fix bug"
+\`\`\`
 
-### 4. 账户管理
+### 4. 管理缓存
 
-```bash
+\`\`\`bash
+# 查看已缓存的 checks
+bootcs cache list
+
+# 清空所有缓存
+bootcs cache clear
+
+# 清空特定课程的缓存
+bootcs cache clear cs50
+\`\`\`
+
+### 5. 账户管理
+
+\`\`\`bash
 # 查看当前登录用户
 bootcs whoami
 
 # 登出
 bootcs logout
-```
+\`\`\`
 
 ## 命令参考
 
 | 命令                   | 说明             |
 | ---------------------- | ---------------- |
-| `bootcs --version`     | 显示版本号       |
-| `bootcs --help`        | 显示帮助信息     |
-| `bootcs login`         | 使用 GitHub 登录 |
-| `bootcs logout`        | 登出             |
-| `bootcs whoami`        | 显示当前登录用户 |
-| `bootcs check <slug>`  | 检查代码         |
-| `bootcs submit <slug>` | 提交代码         |
+| \`bootcs --version\`     | 显示版本号       |
+| \`bootcs --help\`        | 显示帮助信息     |
+| \`bootcs login\`         | 使用 GitHub 登录 |
+| \`bootcs logout\`        | 登出             |
+| \`bootcs whoami\`        | 显示当前登录用户 |
+| \`bootcs check <slug>\`  | 检查代码         |
+| \`bootcs submit <slug>\` | 提交代码         |
+| \`bootcs cache <action>\`| 管理缓存         |
 
 ### check 命令选项
 
-| 选项                    | 说明                  |
-| ----------------------- | --------------------- |
-| `--local PATH`          | 指定本地检查脚本目录  |
-| `--output [ansi\|json]` | 输出格式 (默认: ansi) |
-| `--log`                 | 显示详细日志          |
-| `--target NAME`         | 只运行指定的检查      |
+| 选项                    | 说明                          |
+| ----------------------- | ----------------------------- |
+| \`-L, --language LANG\`   | 指定语言 (自动检测如不指定)   |
+| \`-u, --update\`          | 强制更新 checks               |
+| \`--output [ansi|json]\` | 输出格式 (默认: ansi)         |
+| \`--log\`                 | 显示详细日志                  |
+| \`--target NAME\`         | 只运行指定的检查              |
+| \`--local PATH\`          | 使用本地检查脚本目录          |
 
 ### submit 命令选项
 
-| 选项                | 说明                                    |
-| ------------------- | --------------------------------------- |
-| `--local PATH`      | 指定本地检查脚本目录 (用于获取文件列表) |
-| `-m, --message MSG` | 自定义提交消息                          |
-| `-y, --yes`         | 跳过确认提示                            |
+| 选项                | 说明                     |
+| ------------------- | ------------------------ |
+| \`-L, --language\`    | 指定语言 (自动检测)      |
+| \`-m, --message MSG\` | 自定义提交消息           |
+| \`-y, --yes\`         | 跳过确认提示             |
+| \`--local PATH\`      | 使用本地配置目录         |
 
-## Docker 使用
+### cache 命令选项
 
-### 本地自测
+| 选项              | 说明                     |
+| ----------------- | ------------------------ |
+| \`list\`            | 列出所有缓存的 checks    |
+| \`clear [slug]\`    | 清空缓存 (可选指定课程)  |
+| \`-L, --language\`  | 指定语言                 |
 
-使用 Docker 镜像可以在本地快速进行代码检查，无需安装 Python 环境：
+## 语言自动检测
 
-```bash
-# 使用基础镜像检查代码
-docker run --rm -v $(pwd):/workspace -v /path/to/checks:/checks \
-  ghcr.io/bootcs-cn/bootcs-cli:latest \
-  check course-cs50/hello --local /checks/hello
+CLI 会根据当前目录的文件自动检测编程语言：
 
-# 使用课程专用镜像（已包含检查脚本）
-docker run --rm -v $(pwd):/workspace \
-  ghcr.io/bootcs-cn/bootcs-cli:cs50 \
-  check course-cs50/hello --local /checks/hello
-```
+| 文件扩展名 | 检测为 |
+|------------|--------|
+| \`.c\`, \`.h\` | C |
+| \`.py\` | Python |
+| \`.js\`, \`.mjs\` | JavaScript |
+| \`.go\` | Go |
+| \`.rs\` | Rust |
 
-### GitHub Actions 评测
-
-在 GitHub Actions 中使用 Docker 镜像进行自动评测：
-
-```yaml
-# .github/workflows/evaluate.yml
-name: Evaluate
-
-on:
-  push:
-    branches: [main]
-
-jobs:
-  evaluate:
-    runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/bootcs-cn/bootcs-cli:cs50
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run check
-        run: |
-          bootcs check course-cs50/hello --local /checks/hello --output json > result.json
-      - name: Upload result
-        uses: actions/upload-artifact@v4
-        with:
-          name: result
-          path: result.json
-```
-
-### 使用评测脚本
-
-镜像中包含 `bootcs-evaluate.sh` 脚本，用于标准化评测：
-
-```bash
-# 脚本用法
-bootcs-evaluate.sh <slug> <checks_path> <student_code_path>
-
-# 示例
-docker run --rm \
-  -v $(pwd):/workspace \
-  -v /path/to/output:/output \
-  ghcr.io/bootcs-cn/bootcs-cli:cs50 \
-  bootcs-evaluate.sh course-cs50/hello /checks/hello /workspace
-
-# 结果输出到 /output/result.json
-```
+如果目录有多种语言的文件，会选择文件数量最多的语言。
 
 ## 开发
 
-```bash
+\`\`\`bash
 # 安装开发依赖
 pip install -e ".[dev]"
 
@@ -194,11 +168,11 @@ pytest
 # 代码格式化
 black bootcs/
 ruff check bootcs/
-```
+\`\`\`
 
 ## 项目结构
 
-```
+\`\`\`
 bootcs-cli/
 ├── bootcs/
 │   ├── __init__.py       # 版本信息
@@ -208,33 +182,31 @@ bootcs-cli/
 │   │   └── device_flow.py
 │   ├── api/              # API 客户端
 │   │   ├── client.py
-│   │   └── submit.py
+│   │   ├── submit.py
+│   │   └── checks.py     # 远程 checks 管理
 │   ├── check/            # 检查模块 (基于 check50)
 │   │   ├── _api.py
 │   │   ├── runner.py
-│   │   ├── c.py
-│   │   └── ...
+│   │   └── c.py
 │   └── lib50/            # 工具库 (基于 lib50)
 │       ├── config.py
 │       └── ...
 ├── tests/
-│   ├── unit/             # 单元测试
-│   └── check50/          # check50 测试用例
+│   └── unit/             # 单元测试
 ├── pyproject.toml
-├── README.md
-└── ROADMAP.md
-```
+└── README.md
+\`\`\`
 
 ## 环境变量
 
-| 变量             | 说明         | 默认值                  |
-| ---------------- | ------------ | ----------------------- |
-| `BOOTCS_API_URL` | API 服务地址 | `https://api.bootcs.cn` |
+| 变量               | 说明             | 默认值                  |
+| ------------------ | ---------------- | ----------------------- |
+| \`BOOTCS_API_URL\`   | API 服务地址     | \`https://api.bootcs.cn\` |
+| \`BOOTCS_CHECKS_PATH\` | 本地 checks 路径 (评测环境用) | - |
 
-## 文档
+## 许可证
 
-- [设计文档](DESIGN.md)
-- [落地路线图](ROADMAP.md)
+本项目基于 GPL-3.0 许可证发布，遵循 check50/lib50 的许可证要求。
 
 ## 致谢
 
