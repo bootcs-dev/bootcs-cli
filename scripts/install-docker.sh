@@ -67,12 +67,38 @@ else
 fi
 
 # 创建配置目录
-echo -e "${BLUE}[4/5]${NC} 创建配置目录..."
+echo -e "${BLUE}[4/6]${NC} 创建配置目录..."
 mkdir -p "${CONFIG_DIR}"
 echo -e "${GREEN}✓ 配置目录: ${CONFIG_DIR}${NC}"
 
+# 检查是否已安装本地版 bootcs
+echo -e "${BLUE}[5/6]${NC} 检查已有安装..."
+EXISTING_BOOTCS=$(command -v bootcs 2>/dev/null || true)
+if [ -n "$EXISTING_BOOTCS" ]; then
+    # 检查是否是 Docker wrapper（包含 "docker run"）
+    if grep -q "docker run" "$EXISTING_BOOTCS" 2>/dev/null; then
+        echo -e "${YELLOW}   检测到已安装 Docker 版，将更新...${NC}"
+    else
+        echo -e "${YELLOW}⚠ 检测到已安装本地版 bootcs: ${EXISTING_BOOTCS}${NC}"
+        echo ""
+        echo "  本地版和 Docker 版会冲突。建议："
+        echo "  1. 使用 Docker 版（推荐，环境一致）: 继续安装"
+        echo "  2. 保留本地版: 按 Ctrl+C 取消"
+        echo ""
+        read -p "是否用 Docker 版覆盖本地版? [Y/n] " -r REPLY
+        REPLY=${REPLY:-Y}
+        if [[ ! "$REPLY" =~ ^[Yy]$ ]]; then
+            echo -e "${YELLOW}安装已取消${NC}"
+            exit 0
+        fi
+        echo -e "${GREEN}✓ 将用 Docker 版覆盖本地版${NC}"
+    fi
+else
+    echo -e "${GREEN}✓ 未检测到已有安装${NC}"
+fi
+
 # 创建 wrapper 脚本
-echo -e "${BLUE}[5/5]${NC} 安装 bootcs 命令..."
+echo -e "${BLUE}[6/6]${NC} 安装 bootcs 命令..."
 
 WRAPPER_SCRIPT='#!/bin/bash
 # bootcs-cli Docker wrapper
