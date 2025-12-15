@@ -66,9 +66,9 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 # ============================================
 
 # ============================================
-# 安装 bootcs-cli
+# 安装 bootcs-cli (从 GitHub 安装)
 # ============================================
-RUN pip install --no-cache-dir bootcs
+RUN pip install --no-cache-dir git+https://github.com/bootcs-cn/bootcs-cli.git
 
 # ============================================
 # 环境配置
