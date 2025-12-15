@@ -51,12 +51,14 @@ RUN git clone --depth 1 https://github.com/cs50/libcs50.git /tmp/libcs50 \
 # ============================================
 # Java 工具链
 # ============================================
+# python:3.11-slim 基于 Debian Bookworm，使用 default-jdk
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-17-jdk \
+    default-jdk \
     maven \
     && rm -rf /var/lib/apt/lists/*
 
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+# 动态获取 JAVA_HOME
+ENV JAVA_HOME=/usr/lib/jvm/default-java
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 # ============================================
