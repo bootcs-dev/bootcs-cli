@@ -101,15 +101,17 @@ def submit_files(
     files: List[SubmitFile],
     token: str,
     message: Optional[str] = None,
+    language: Optional[str] = None,
 ) -> SubmitResult:
     """
     Submit files to bootcs API.
     
     Args:
-        slug: The submission slug (e.g., "course-cs50/hello")
+        slug: The submission slug (e.g., "cs50/hello")
         files: List of files to submit
         token: Authentication token
         message: Optional commit message
+        language: Optional language (auto-detected from files if not provided)
     
     Returns:
         SubmitResult with submission details.
@@ -130,6 +132,9 @@ def submit_files(
     
     if message:
         request_data["message"] = message
+    
+    if language:
+        request_data["language"] = language
     
     # Make request
     response = client.post("/api/submit", request_data)

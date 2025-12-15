@@ -32,25 +32,39 @@ def main():
     
     # Check command
     check_parser = subparsers.add_parser("check", help="Check your code against tests")
-    check_parser.add_argument("slug", help="The check slug (e.g., course-cs50/mario-less)")
+    check_parser.add_argument("slug", help="The check slug (e.g., cs50/mario-less)")
     check_parser.add_argument("-o", "--output", choices=["ansi", "json"], default="ansi",
                               help="Output format (default: ansi)")
     check_parser.add_argument("--log", action="store_true", help="Show detailed log")
     check_parser.add_argument("--target", action="append", metavar="check",
                               help="Run only the specified check(s)")
+    check_parser.add_argument("-L", "--language", default="c",
+                              help="Language for checks (default: c)")
+    check_parser.add_argument("-u", "--update", action="store_true",
+                              help="Force update checks from remote")
     check_parser.add_argument("--local", metavar="PATH", help="Path to local checks directory")
     
     # Submit command
     submit_parser = subparsers.add_parser("submit", help="Submit your code")
-    submit_parser.add_argument("slug", help="The submission slug (e.g., course-cs50/hello)")
+    submit_parser.add_argument("slug", help="The submission slug (e.g., cs50/hello)")
     submit_parser.add_argument("-m", "--message", help="Commit message")
     submit_parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation")
+    submit_parser.add_argument("-L", "--language", help="Language of submission (auto-detected if not specified)")
     submit_parser.add_argument("--local", metavar="PATH", help="Path to local checks directory (for file list)")
     
     # Auth commands
     subparsers.add_parser("login", help="Log in with GitHub")
     subparsers.add_parser("logout", help="Log out")
     subparsers.add_parser("whoami", help="Show logged in user")
+    
+    # Cache command
+    cache_parser = subparsers.add_parser("cache", help="Manage checks cache")
+    cache_parser.add_argument("action", choices=["clear", "list"],
+                              help="Action to perform")
+    cache_parser.add_argument("slug", nargs="?",
+                              help="Specific course or course/stage slug (optional)")
+    cache_parser.add_argument("-L", "--language",
+                              help="Specific language (optional)")
     
     args = parser.parse_args()
     
@@ -64,6 +78,8 @@ def main():
         return run_logout(args)
     elif args.command == "whoami":
         return run_whoami(args)
+    elif args.command == "cache":
+        return run_cache(args)
     else:
         parser.print_help()
         return 1
@@ -72,17 +88,19 @@ def main():
 def run_check(args):
     """Run the check command."""
     slug = args.slug
+    language = getattr(args, 'language', 'c') or 'c'
+    force_update = getattr(args, 'update', False)
     
     # Determine check directory
     if args.local:
         check_dir = Path(args.local).resolve()
     else:
-        # For now, look for checks in a local directory structure
-        # Future: download from remote like check50 does
-        check_dir = find_check_dir(slug)
+        # Try remote download first, then fall back to local search
+        check_dir = find_check_dir(slug, language=language, force_update=force_update)
     
     if not check_dir or not check_dir.exists():
         termcolor.cprint(f"Error: Could not find checks for '{slug}'", "red", file=sys.stderr)
+        termcolor.cprint("Use --local to specify a local checks directory.", "yellow", file=sys.stderr)
         return 1
     
     # Set internal state
@@ -220,12 +238,50 @@ def output_json(results, show_log=False):
     print(json.dumps(output, indent=2))
 
 
-def find_check_dir(slug):
-    """Find the check directory for a given slug."""
-    # Extract stage name from slug (e.g., "cs50/credit" -> "credit")
-    stage_name = slug.split("/")[-1] if "/" in slug else slug
+def find_check_dir(slug, language: str = "c", force_update: bool = False):
+    """
+    Find the check directory for a given slug.
     
-    # Common locations to search
+    Priority:
+    1. BOOTCS_CHECKS_PATH environment variable (for evaluator)
+    2. Remote API download (with local cache)
+    3. Local directories (for development)
+    """
+    # Extract parts from slug (e.g., "cs50/credit" -> course="cs50", stage="credit")
+    parts = slug.split("/")
+    if len(parts) == 2:
+        course_slug, stage_name = parts
+    else:
+        stage_name = slug
+        course_slug = None
+    
+    # 1. Check environment variable first (used by evaluator)
+    if "BOOTCS_CHECKS_PATH" in os.environ:
+        checks_path = Path(os.environ["BOOTCS_CHECKS_PATH"])
+        # Try with stage name directly
+        path = checks_path / stage_name
+        if path.exists():
+            return path
+        # Try with full slug
+        if course_slug:
+            path = checks_path / slug
+            if path.exists():
+                return path
+    
+    # 2. Try remote download (if slug has course/stage format)
+    if course_slug and "/" in slug:
+        try:
+            from .api.checks import get_checks_manager
+            manager = get_checks_manager()
+            check_path = manager.get_checks(slug, language=language, force_update=force_update)
+            if check_path.exists():
+                return check_path
+        except Exception as e:
+            # Log error but continue to local fallback
+            import sys
+            print(f"Warning: Could not download checks: {e}", file=sys.stderr)
+    
+    # 3. Local directories fallback (for development)
     search_paths = [
         Path.cwd() / "checks" / slug,
         Path.cwd() / "checks" / stage_name,
@@ -233,12 +289,6 @@ def find_check_dir(slug):
         Path.cwd().parent / "checks" / stage_name,
         Path.home() / ".local" / "share" / "bootcs" / slug,
     ]
-    
-    # Also check environment variable (try both full slug and stage name)
-    if "BOOTCS_CHECKS_PATH" in os.environ:
-        checks_path = Path(os.environ["BOOTCS_CHECKS_PATH"])
-        search_paths.insert(0, checks_path / stage_name)
-        search_paths.insert(0, checks_path / slug)
     
     for path in search_paths:
         if path.exists():
@@ -254,6 +304,7 @@ def run_submit(args):
     from .api.submit import collect_files, submit_files, SubmitFile
     
     slug = args.slug
+    language = getattr(args, 'language', None)  # Optional, will be auto-detected if not provided
     
     # Check if logged in
     if not is_logged_in():
@@ -264,10 +315,12 @@ def run_submit(args):
     token = get_token()
     
     # Determine check directory for file list
+    # Use provided language or default to 'c' for finding checks
+    check_language = language or 'c'
     if args.local:
         check_dir = Path(args.local).resolve()
     else:
-        check_dir = find_check_dir(slug)
+        check_dir = find_check_dir(slug, language=check_language)
     
     if not check_dir or not check_dir.exists():
         termcolor.cprint(f"Error: Could not find config for '{slug}'", "red", file=sys.stderr)
@@ -331,6 +384,7 @@ def run_submit(args):
             files=files,
             token=token,
             message=args.message,
+            language=language,  # Pass language if specified
         )
         print()
         print()
@@ -465,6 +519,57 @@ def run_whoami(args):
         print()
     else:
         print("Logged in (no user info available)")
+    
+    return 0
+
+
+def run_cache(args):
+    """Run the cache command."""
+    from .api.checks import get_checks_manager
+    
+    action = args.action
+    slug = getattr(args, 'slug', None)
+    language = getattr(args, 'language', None)
+    
+    manager = get_checks_manager()
+    
+    if action == "list":
+        # List cached checks
+        cached = manager.list_cache()
+        
+        if not cached:
+            termcolor.cprint("No cached checks.", "yellow")
+            return 0
+        
+        print()
+        termcolor.cprint("📦 Cached Checks:", "cyan", attrs=["bold"])
+        print()
+        print(f"  {'Course':<10} {'Language':<10} {'Stage':<15} {'Version':<10} {'Age':<6}")
+        print(f"  {'-'*10} {'-'*10} {'-'*15} {'-'*10} {'-'*6}")
+        
+        for item in cached:
+            print(f"  {item['course']:<10} {item['language']:<10} {item['stage']:<15} {item['version']:<10} {item['age']:<6}")
+        
+        print()
+        print(f"  Total: {len(cached)} cached checks")
+        print(f"  Location: {manager.cache_dir}")
+        print()
+        return 0
+    
+    elif action == "clear":
+        # Clear cache
+        try:
+            manager.clear_cache(slug=slug, language=language)
+            
+            if slug:
+                termcolor.cprint(f"✅ Cleared cache for '{slug}'", "green")
+            else:
+                termcolor.cprint("✅ Cleared all cached checks", "green")
+            
+            return 0
+        except ValueError as e:
+            termcolor.cprint(f"❌ Error: {e}", "red")
+            return 1
     
     return 0
 
