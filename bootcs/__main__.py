@@ -323,11 +323,19 @@ def find_check_dir(slug, language: str = "c", force_update: bool = False):
     # 1. Check environment variable first (used by evaluator)
     if "BOOTCS_CHECKS_PATH" in os.environ:
         checks_path = Path(os.environ["BOOTCS_CHECKS_PATH"])
-        # Try with stage name directly
+        # Try with language/stage structure (e.g., checks/c/hello)
+        path = checks_path / language / stage_name
+        if path.exists():
+            return path
+        # Try with full slug under language
+        if course_slug:
+            path = checks_path / language / slug
+            if path.exists():
+                return path
+        # Fallback: try without language prefix
         path = checks_path / stage_name
         if path.exists():
             return path
-        # Try with full slug
         if course_slug:
             path = checks_path / slug
             if path.exists():
