@@ -9,7 +9,7 @@ description = "BootCS CLI - Check and submit your code, based on check50/lib50"
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
 requires-python = ">=3.9"
-authors = [{ name = "BootCS Team", email = "team@bootcs.cn" }]
+authors = [{ name = "BootCS Team", email = "team@bootcs.dev" }]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Environment :: Console",
@@ -41,8 +41,8 @@ dev = ["pytest>=7.0", "pytest-cov>=4.0", "black>=23.0", "ruff>=0.1"]
 bootcs = "bootcs.__main__:main"
 
 [project.urls]
-Homepage = "https://bootcs.cn"
-Repository = "https://github.com/bootcs-cn/bootcs-cli"
+Homepage = "https://bootcs.dev"
+Repository = "https://github.com/bootcs-dev/bootcs-cli"
 
 [tool.setuptools.packages.find]
 where = ["."]

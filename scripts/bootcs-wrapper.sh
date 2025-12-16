@@ -14,7 +14,7 @@
 set -e
 
 # 配置
-IMAGE="${BOOTCS_CLI_IMAGE:-ghcr.io/bootcs-cn/bootcs-cli:latest}"
+IMAGE="${BOOTCS_CLI_IMAGE:-ghcr.io/bootcs-dev/bootcs-cli:latest}"
 CONFIG_DIR="${HOME}/.bootcs"
 
 # 确保配置目录存在

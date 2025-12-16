@@ -2,7 +2,7 @@
 # bootcs-cli Docker 版一键安装脚本
 #
 # 使用方式:
-#   curl -fsSL https://raw.githubusercontent.com/bootcs-cn/bootcs-cli/main/scripts/install-docker.sh | bash
+#   curl -fsSL https://raw.githubusercontent.com/bootcs-dev/bootcs-cli/main/scripts/install-docker.sh | bash
 #
 # 或本地执行:
 #   ./scripts/install-docker.sh
@@ -18,7 +18,7 @@ CYAN='\033[0;36m'
 NC='\033[0m' # No Color
 
 # 配置
-IMAGE="${BOOTCS_CLI_IMAGE:-ghcr.io/bootcs-cn/bootcs-cli:latest}"
+IMAGE="${BOOTCS_CLI_IMAGE:-ghcr.io/bootcs-dev/bootcs-cli:latest}"
 WRAPPER_NAME="bootcs"
 INSTALL_DIR="/usr/local/bin"
 CONFIG_DIR="${HOME}/.bootcs"
@@ -104,7 +104,7 @@ WRAPPER_SCRIPT='#!/bin/bash
 # bootcs-cli Docker wrapper
 # 自动生成，请勿手动编辑
 
-IMAGE="ghcr.io/bootcs-cn/bootcs-cli:latest"
+IMAGE="ghcr.io/bootcs-dev/bootcs-cli:latest"
 CONFIG_DIR="${HOME}/.bootcs"
 
 # 确保配置目录存在

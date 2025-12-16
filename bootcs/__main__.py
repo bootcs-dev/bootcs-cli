@@ -476,7 +476,7 @@ def run_submit(args):
         if result.status == "EVALUATING":
             print()
             termcolor.cprint("💡 Your code is being evaluated. Check results at:", "cyan")
-            print(f"   https://bootcs.cn/submissions/{result.submission_id}")
+            print(f"   https://bootcs.dev/submissions/{result.submission_id}")
         
         return 0
         

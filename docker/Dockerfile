@@ -4,8 +4,8 @@
 # 与评测环境一致，避免"本地通过、线上失败"问题
 #
 # 使用方式:
-#   docker run --rm -v $(pwd):/workspace ghcr.io/bootcs-cn/bootcs-cli check cs50/hello
-#   docker run --rm -v $(pwd):/workspace ghcr.io/bootcs-cn/bootcs-cli submit cs50/hello
+#   docker run --rm -v $(pwd):/workspace ghcr.io/bootcs-dev/bootcs-cli check cs50/hello
+#   docker run --rm -v $(pwd):/workspace ghcr.io/bootcs-dev/bootcs-cli submit cs50/hello
 #
 # 支持课程:
 #   - CS50 (C, Python)
@@ -16,7 +16,7 @@
 
 FROM python:3.11-slim
 
-LABEL org.opencontainers.image.source="https://github.com/bootcs-cn/bootcs-cli"
+LABEL org.opencontainers.image.source="https://github.com/bootcs-dev/bootcs-cli"
 LABEL org.opencontainers.image.description="bootcs-cli development environment for students"
 LABEL org.opencontainers.image.licenses="MIT"
 
@@ -68,7 +68,7 @@ ENV PATH="${JAVA_HOME}/bin:${PATH}"
 # ============================================
 # 安装 bootcs-cli (从 GitHub 安装)
 # ============================================
-RUN pip install --no-cache-dir git+https://github.com/bootcs-cn/bootcs-cli.git
+RUN pip install --no-cache-dir git+https://github.com/bootcs-dev/bootcs-cli.git
 
 # ============================================
 # 环境配置

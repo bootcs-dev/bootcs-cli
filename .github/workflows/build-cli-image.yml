@@ -4,8 +4,8 @@
 # 学员只需使用一个镜像，无需选择
 #
 # 镜像标签:
-#   - ghcr.io/bootcs-cn/bootcs-cli:latest (推荐)
-#   - ghcr.io/bootcs-cn/bootcs-cli:v2.0.0 (版本号)
+#   - ghcr.io/bootcs-dev/bootcs-cli:latest (推荐)
+#   - ghcr.io/bootcs-dev/bootcs-cli:v2.0.0 (版本号)
 
 name: Build CLI Image
 
@@ -31,7 +31,7 @@ on:
 
 env:
     REGISTRY: ghcr.io
-    IMAGE_NAME: bootcs-cn/bootcs-cli
+    IMAGE_NAME: bootcs-dev/bootcs-cli
 
 jobs:
     build:
@@ -101,8 +101,8 @@ jobs:
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
                   echo "# 本地评测" >> $GITHUB_STEP_SUMMARY
-                  echo "docker run --rm -v \$(pwd):/workspace ghcr.io/bootcs-cn/cli check cs50/hello" >> $GITHUB_STEP_SUMMARY
+                  echo "docker run --rm -v \$(pwd):/workspace ghcr.io/bootcs-dev/bootcs-cli check cs50/hello" >> $GITHUB_STEP_SUMMARY
                   echo "" >> $GITHUB_STEP_SUMMARY
                   echo "# 提交代码" >> $GITHUB_STEP_SUMMARY
-                  echo "docker run --rm -v \$(pwd):/workspace ghcr.io/bootcs-cn/cli submit cs50/hello" >> $GITHUB_STEP_SUMMARY
+                  echo "docker run --rm -v \$(pwd):/workspace ghcr.io/bootcs-dev/bootcs-cli submit cs50/hello" >> $GITHUB_STEP_SUMMARY
                   echo "\`\`\`" >> $GITHUB_STEP_SUMMARY

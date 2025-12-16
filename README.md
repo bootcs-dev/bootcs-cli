@@ -6,7 +6,7 @@
 
 ```bash
 # 1. 安装（只需一次）
-curl -fsSL https://raw.githubusercontent.com/bootcs-cn/bootcs-cli/main/scripts/install-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bootcs-dev/bootcs-cli/main/scripts/install-docker.sh | bash
 
 # 2. 登录（只需一次）
 bootcs login
@@ -24,7 +24,7 @@ bootcs submit cs50/hello
 ### 推荐方式：一键安装
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/bootcs-cn/bootcs-cli/main/scripts/install-docker.sh | bash
+curl -fsSL https://raw.githubusercontent.com/bootcs-dev/bootcs-cli/main/scripts/install-docker.sh | bash
 ```
 
 > 需要先安装 [Docker Desktop](https://www.docker.com/products/docker-desktop/)
@@ -143,8 +143,8 @@ Error: Could not find checks for 'xxx'
 
 ## 📚 更多帮助
 
-- [BootCS 官网](https://bootcs.cn)
-- [课程文档](https://docs.bootcs.cn)
+- [BootCS 官网](https://bootcs.dev)
+- [课程文档](https://docs.bootcs.dev)
 
 ---
 
@@ -156,22 +156,22 @@ Error: Could not find checks for 'xxx'
 如果你不想使用 Docker，可以用 pip 安装：
 
 ```bash
-pip install git+https://github.com/bootcs-cn/bootcs-cli.git
+pip install git+https://github.com/bootcs-dev/bootcs-cli.git
 ```
 
 需要自行配置 C/Python/Java 编译环境。
 
 ### 环境变量
 
-| 变量                 | 说明             | 默认值                  |
-| -------------------- | ---------------- | ----------------------- |
-| `BOOTCS_API_URL`     | API 地址         | `https://api.bootcs.cn` |
-| `BOOTCS_CHECKS_PATH` | 本地 checks 路径 | -                       |
+| 变量                 | 说明             | 默认值                   |
+| -------------------- | ---------------- | ------------------------ |
+| `BOOTCS_API_URL`     | API 地址         | `https://api.bootcs.dev` |
+| `BOOTCS_CHECKS_PATH` | 本地 checks 路径 | -                        |
 
 ### 开发模式
 
 ```bash
-git clone https://github.com/bootcs-cn/bootcs-cli.git
+git clone https://github.com/bootcs-dev/bootcs-cli.git
 cd bootcs-cli
 pip install -e ".[dev]"
 pytest

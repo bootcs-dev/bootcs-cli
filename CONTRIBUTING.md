@@ -12,7 +12,7 @@ bootcs-cli 基于 [check50](https://github.com/cs50/check50) 和 [lib50](https:/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/bootcs-cn/bootcs-cli.git
+git clone https://github.com/bootcs-dev/bootcs-cli.git
 cd bootcs-cli
 
 # 创建虚拟环境
@@ -84,9 +84,9 @@ bootcs-cli/
 
 | 变量                 | 说明                          | 默认值                                |
 | -------------------- | ----------------------------- | ------------------------------------- |
-| `BOOTCS_API_URL`     | API 服务地址                  | `https://api.bootcs.cn`               |
+| `BOOTCS_API_URL`     | API 服务地址                  | `https://api.bootcs.dev`              |
 | `BOOTCS_CHECKS_PATH` | 本地 checks 路径 (评测环境用) | -                                     |
-| `BOOTCS_CLI_IMAGE`   | Docker 镜像 (开发用)          | `ghcr.io/bootcs-cn/bootcs-cli:latest` |
+| `BOOTCS_CLI_IMAGE`   | Docker 镜像 (开发用)          | `ghcr.io/bootcs-dev/bootcs-cli:latest` |
 
 ## Docker 镜像构建
 
