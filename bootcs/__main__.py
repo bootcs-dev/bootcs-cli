@@ -101,6 +101,35 @@ LANGUAGE_EXTENSIONS = {
     '.cxx': 'cpp',
 }
 
+# Supported languages for slug parsing
+SUPPORTED_LANGUAGES = {'c', 'python', 'java', 'cpp', 'go', 'rust', 'javascript', 'typescript'}
+
+
+def parse_slug(slug: str):
+    """
+    Parse a slug into course, language, and stage components.
+    
+    Supports two formats:
+    - 2 parts: "cs50/hello" -> (course="cs50", language=None, stage="hello")
+    - 3 parts: "cs50/c/hello" -> (course="cs50", language="c", stage="hello")
+    
+    Returns:
+        tuple: (course_slug, language_from_slug, stage_slug)
+        - language_from_slug is None if slug has 2 parts
+    """
+    parts = slug.split("/")
+    if len(parts) == 3:
+        course_slug, lang, stage_slug = parts
+        # Validate that middle part looks like a language
+        if lang in SUPPORTED_LANGUAGES:
+            return course_slug, lang, stage_slug
+        # If middle part doesn't look like a language, treat as 2-part with nested stage
+        return parts[0], None, "/".join(parts[1:])
+    elif len(parts) == 2:
+        return parts[0], None, parts[1]
+    else:
+        return None, None, slug
+
 
 def detect_language(directory: Path = None, explicit: str = None) -> str:
     """
@@ -151,9 +180,15 @@ def run_check(args):
     slug = args.slug
     force_update = getattr(args, 'update', False)
     
-    # Auto-detect language from files in current directory
+    # Parse slug to extract language if present (e.g., "cs50/c/hello")
+    course_slug, lang_from_slug, stage_slug = parse_slug(slug)
+    
+    # Determine language: slug > explicit flag > auto-detect
     explicit_lang = getattr(args, 'language', None)
-    language = detect_language(directory=Path.cwd(), explicit=explicit_lang)
+    if lang_from_slug:
+        language = lang_from_slug
+    else:
+        language = detect_language(directory=Path.cwd(), explicit=explicit_lang)
     
     # Determine check directory
     if args.local:
@@ -307,22 +342,30 @@ def find_check_dir(slug, language: str = "c", force_update: bool = False):
     """
     Find the check directory for a given slug.
     
+    Supports two slug formats:
+    - 2 parts: "cs50/hello" (language auto-detected or passed as parameter)
+    - 3 parts: "cs50/c/hello" (language extracted from slug)
+    
     Priority:
     1. BOOTCS_CHECKS_PATH environment variable (for evaluator)
     2. Remote API download (with local cache)
     3. Local directories (for development)
     """
-    # Extract parts from slug (e.g., "cs50/credit" -> course="cs50", stage="credit")
-    parts = slug.split("/")
-    if len(parts) == 2:
-        course_slug, stage_name = parts
-    else:
-        stage_name = slug
-        course_slug = None
+    # Use parse_slug to extract components
+    course_slug, lang_from_slug, stage_name = parse_slug(slug)
+    
+    # If slug contains language, use it; otherwise use provided parameter
+    if lang_from_slug:
+        language = lang_from_slug
     
     # 1. Check environment variable first (used by evaluator)
     if "BOOTCS_CHECKS_PATH" in os.environ:
         checks_path = Path(os.environ["BOOTCS_CHECKS_PATH"])
+        # Try with course/language/stage structure (e.g., checks/cs50/c/hello)
+        if course_slug:
+            path = checks_path / course_slug / language / stage_name
+            if path.exists():
+                return path
         # Try with language/stage structure (e.g., checks/c/hello)
         path = checks_path / language / stage_name
         if path.exists():
@@ -378,9 +421,15 @@ def run_submit(args):
     
     slug = args.slug
     
-    # Auto-detect language from files in current directory
+    # Parse slug to extract language if present (e.g., "cs50/c/hello")
+    course_slug, lang_from_slug, stage_slug = parse_slug(slug)
+    
+    # Determine language: slug > explicit flag > auto-detect
     explicit_lang = getattr(args, 'language', None)
-    language = detect_language(directory=Path.cwd(), explicit=explicit_lang)
+    if lang_from_slug:
+        language = lang_from_slug
+    else:
+        language = detect_language(directory=Path.cwd(), explicit=explicit_lang)
     
     # Check if logged in
     if not is_logged_in():
