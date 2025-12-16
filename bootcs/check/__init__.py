@@ -27,10 +27,11 @@ from ._api import (
 
 from . import regex
 from . import c
+from . import java
 from . import internal
 from .runner import check
 from pexpect import EOF
 
 __all__ = ["import_checks", "data", "exists", "hash", "include", "regex",
            "run", "log", "Failure", "Mismatch", "Missing", "check", "EOF",
-           "c", "internal", "hidden"]
+           "c", "java", "internal", "hidden"]
