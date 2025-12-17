@@ -110,6 +110,33 @@ CONFIG_DIR="${HOME}/.bootcs"
 # 确保配置目录存在
 mkdir -p "${CONFIG_DIR}"
 
+# 每日自动检查更新（后台静默执行，不阻塞用户）
+check_update() {
+    LAST_CHECK="${CONFIG_DIR}/.last_update_check"
+    TODAY=$(date +%Y-%m-%d)
+    
+    if [ ! -f "$LAST_CHECK" ] || [ "$(cat "$LAST_CHECK" 2>/dev/null)" != "$TODAY" ]; then
+        # 后台静默拉取最新镜像
+        (docker pull "${IMAGE}" --quiet >/dev/null 2>&1; echo "$TODAY" > "$LAST_CHECK") &
+    fi
+}
+
+# 手动更新命令
+if [[ "$1" == "update" ]]; then
+    echo "Checking for updates..."
+    if docker pull "${IMAGE}"; then
+        echo "✓ bootcs-cli is up to date"
+        date +%Y-%m-%d > "${CONFIG_DIR}/.last_update_check"
+    else
+        echo "✗ Update failed"
+        exit 1
+    fi
+    exit 0
+fi
+
+# 检查更新（后台执行）
+check_update
+
 # 运行容器
 # -v $(pwd):/workspace  - 挂载当前目录为工作目录
 # -v ~/.bootcs:/root/.bootcs - 持久化凭证和缓存
@@ -163,8 +190,13 @@ echo ""
 echo -e "  ${YELLOW}3. 提交代码:${NC}"
 echo -e "     ${BLUE}bootcs submit cs50/hello${NC}"
 echo ""
-echo -e "  ${YELLOW}4. 查看帮助:${NC}"
+echo -e "  ${YELLOW}4. 手动更新:${NC}"
+echo -e "     ${BLUE}bootcs update${NC}"
+echo ""
+echo -e "  ${YELLOW}5. 查看帮助:${NC}"
 echo -e "     ${BLUE}bootcs --help${NC}"
+echo ""
+echo -e "${YELLOW}提示: bootcs 会每天自动检查更新，无需手动操作${NC}"
 echo ""
 echo -e "${CYAN}════════════════════════════════════════════════════════════════${NC}"
 
