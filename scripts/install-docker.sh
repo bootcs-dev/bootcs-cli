@@ -137,9 +137,29 @@ fi
 # 检查更新（后台执行）
 check_update
 
+# 解析 --local 参数，获取本地 checks 路径
+LOCAL_MOUNT=""
+for i in "${!BASH_ARGV[@]}"; do
+    :
+done
+# 遍历参数查找 --local
+ARGS=("$@")
+for i in "${!ARGS[@]}"; do
+    if [[ "${ARGS[$i]}" == "--local" ]]; then
+        LOCAL_PATH="${ARGS[$((i+1))]}"
+        if [ -n "$LOCAL_PATH" ] && [ -d "$LOCAL_PATH" ]; then
+            # 转换为绝对路径
+            LOCAL_PATH=$(cd "$LOCAL_PATH" && pwd)
+            LOCAL_MOUNT="-v ${LOCAL_PATH}:${LOCAL_PATH}"
+        fi
+        break
+    fi
+done
+
 # 运行容器
 # -v $(pwd):/workspace  - 挂载当前目录为工作目录
 # -v ~/.bootcs:/root/.bootcs - 持久化凭证和缓存
+# -v LOCAL_PATH:LOCAL_PATH - 挂载本地 checks 目录（如果指定）
 # -it - 交互模式 (login 需要)
 # --rm - 运行后删除容器
 
@@ -148,11 +168,13 @@ if [[ "$1" == "login" ]]; then
     docker run -it --rm \
         -v "$(pwd)":/workspace \
         -v "${CONFIG_DIR}":/root/.bootcs \
+        ${LOCAL_MOUNT} \
         "${IMAGE}" "$@"
 else
     docker run --rm \
         -v "$(pwd)":/workspace \
         -v "${CONFIG_DIR}":/root/.bootcs \
+        ${LOCAL_MOUNT} \
         "${IMAGE}" "$@"
 fi
 '
