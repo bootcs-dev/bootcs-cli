@@ -90,16 +90,17 @@ def main():
         return 1
 
 
-# Language extension mapping (MVP: c/python/java)
+# Language extension mapping
 LANGUAGE_EXTENSIONS = {
     '.c': 'c',
     '.h': 'c',
     '.py': 'python',
     '.java': 'java',
+    '.sql': 'sql',
 }
 
-# Supported languages for slug parsing (MVP: c/python/java)
-SUPPORTED_LANGUAGES = {'c', 'python', 'java'}
+# Supported languages for slug parsing
+SUPPORTED_LANGUAGES = {'c', 'python', 'java', 'sql'}
 
 
 def parse_slug(slug: str):
