@@ -354,6 +354,7 @@ def output_ansi(results, show_log=False):
         
         termcolor.cprint(f"{emoji} {result.description}", color)
         
+        # Show cause for failed checks (passed=False)
         if result.cause and result.passed is False:
             rationale = result.cause.get("rationale", "")
             if rationale:
@@ -361,6 +362,18 @@ def output_ansi(results, show_log=False):
             help_msg = result.cause.get("help")
             if help_msg:
                 termcolor.cprint(f"   💡 {help_msg}", "cyan")
+        
+        # In dev mode or with --log, also show error info for skipped checks (passed=None)
+        if result.cause and result.passed is None and show_log:
+            error_info = result.cause.get("error")
+            if error_info:
+                error_type = error_info.get("type", "Error")
+                error_value = error_info.get("value", "")
+                termcolor.cprint(f"   ⚠️  {error_type}: {error_value}", "yellow")
+            else:
+                rationale = result.cause.get("rationale", "")
+                if rationale and rationale != "can't check until a frown turns upside down":
+                    termcolor.cprint(f"   ⚠️  {rationale}", "yellow")
         
         if show_log and result.log:
             print("   Log:")

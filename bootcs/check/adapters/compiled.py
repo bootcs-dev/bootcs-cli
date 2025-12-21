@@ -123,7 +123,11 @@ class CompiledLanguageAdapter(LanguageAdapter):
             # e.g., hello.c -> hello
             from .. import _api
             exe_name = source_file.stem
-            return _api.run(f"./{exe_name}", *args)
+            # Build command string with arguments
+            command = f"./{exe_name}"
+            if args:
+                command += " " + " ".join(str(arg) for arg in args)
+            return _api.run(command)
         elif self.language == 'java':
             # Use existing Java runner
             return java.run(str(source_file), *args)
@@ -195,10 +199,17 @@ class InterpretedLanguageAdapter(LanguageAdapter):
         
         if self.language in ('python', 'py'):
             from .. import _api
-            return _api.run(f"python3 {source_file}", *args)
+            # Build command string with arguments
+            command = f"python3 {source_file}"
+            if args:
+                command += " " + " ".join(str(arg) for arg in args)
+            return _api.run(command)
         elif self.language in ('javascript', 'js'):
             from .. import _api
-            return _api.run(f"node {source_file}", *args)
+            command = f"node {source_file}"
+            if args:
+                command += " " + " ".join(str(arg) for arg in args)
+            return _api.run(command)
         else:
             raise NotImplementedError(
                 f"Execution not yet implemented for language: {self.language}"
