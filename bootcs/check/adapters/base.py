@@ -24,7 +24,7 @@ class LanguageAdapter(ABC):
         language (str): The programming language (e.g., "c", "python", "java")
     """
     
-    def __init__(self, problem: str, language: str = None):
+    def __init__(self, problem: str, language: Optional[str] = None):
         """
         Initialize the language adapter.
         
@@ -59,7 +59,7 @@ class LanguageAdapter(ABC):
         pass
     
     @abstractmethod
-    def compile(self, *args, **kwargs):
+    def compile(self, *args, **kwargs) -> Optional[object]:
         """
         Compile the source code (if needed for this language).
         
@@ -72,11 +72,14 @@ class LanguageAdapter(ABC):
         
         Raises:
             CompileError: If compilation fails
+        
+        Returns:
+            Optional process object for validation languages
         """
         pass
     
     @abstractmethod
-    def run(self, *args, stdin=None, **kwargs):
+    def run(self, *args, stdin=None, **kwargs) -> object:
         """
         Run the compiled/interpreted program.
         

@@ -29,7 +29,7 @@ class CompiledLanguageAdapter(LanguageAdapter):
         - Java: uses bootcs.check.java module
     """
     
-    def __init__(self, problem: str, language: str = None):
+    def __init__(self, problem: str, language: Optional[str] = None):
         """
         Initialize compiled language adapter.
         
@@ -74,7 +74,7 @@ class CompiledLanguageAdapter(LanguageAdapter):
         """
         return find_source_file(self.problem, self.language)
     
-    def compile(self, *args, **kwargs):
+    def compile(self, *args, **kwargs) -> Optional[object]:
         """
         Compile the source code using language-specific compiler.
         
@@ -101,7 +101,7 @@ class CompiledLanguageAdapter(LanguageAdapter):
                 f"Compilation not yet implemented for language: {self.language}"
             )
     
-    def run(self, *args, stdin=None, **kwargs):
+    def run(self, *args, stdin=None, **kwargs) -> object:
         """
         Run the compiled program.
         
@@ -140,7 +140,7 @@ class InterpretedLanguageAdapter(LanguageAdapter):
     These languages don't need compilation but still use naming conventions.
     """
     
-    def __init__(self, problem: str, language: str = None):
+    def __init__(self, problem: str, language: Optional[str] = None):
         """
         Initialize interpreted language adapter.
         
@@ -179,7 +179,7 @@ class InterpretedLanguageAdapter(LanguageAdapter):
             # Optionally: py_compile.compile(source_file, doraise=True)
             pass
     
-    def run(self, *args, stdin=None, **kwargs):
+    def run(self, *args, stdin=None, **kwargs) -> object:
         """
         Run the interpreted program.
         

@@ -8,6 +8,7 @@ Licensed under GPL-3.0
 """
 
 from pathlib import Path
+from typing import Optional
 from typing import Dict, Callable
 
 
@@ -157,7 +158,7 @@ def get_source_filename(problem: str, language: str) -> str:
     return convention(problem)
 
 
-def find_source_file(problem: str, language: str, search_dir: Path = None) -> Path:
+def find_source_file(problem: str, language: str, search_dir: Optional[Path] = None) -> Path:
     """
     Find the source file for a problem in a given language.
     

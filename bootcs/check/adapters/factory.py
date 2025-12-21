@@ -21,8 +21,8 @@ INTERPRETED_LANGUAGES = {'python', 'py', 'javascript', 'js', 'typescript', 'ts'}
 
 
 def create_adapter(
-    problem: str = None,
-    language: str = None,
+    problem: Optional[str] = None,
+    language: Optional[str] = None,
     adapter_type: str = 'auto'
 ) -> LanguageAdapter:
     """
