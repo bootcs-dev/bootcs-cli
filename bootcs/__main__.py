@@ -877,14 +877,14 @@ def run_cache(args):
         print()
         termcolor.cprint("📦 Cached Checks:", "cyan", attrs=["bold"])
         print()
-        print(f"  {'Course':<10} {'Language':<10} {'Stage':<15} {'Version':<10} {'Age':<6}")
-        print(f"  {'-'*10} {'-'*10} {'-'*15} {'-'*10} {'-'*6}")
+        print(f"  {'Course':<10} {'Stage':<20} {'Version':<10} {'Age':<6}")
+        print(f"  {'-'*10} {'-'*20} {'-'*10} {'-'*6}")
         
         for item in cached:
-            print(f"  {item['course']:<10} {item['language']:<10} {item['stage']:<15} {item['version']:<10} {item['age']:<6}")
+            print(f"  {item['course']:<10} {item['stage']:<20} {item['version']:<10} {item['age']:<6}")
         
         print()
-        print(f"  Total: {len(cached)} cached checks")
+        print(f"  Total: {len(cached)} cached checks (language-agnostic)")
         print(f"  Location: {manager.cache_dir}")
         print()
         return 0

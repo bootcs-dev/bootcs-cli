@@ -69,7 +69,8 @@ class ChecksManager:
             raise ValueError(f"Invalid slug format: {slug}. Expected 'course/stage'")
 
         course_slug, stage_slug = parts
-        cache_path = self.cache_dir / course_slug / language / stage_slug
+        # Language-agnostic cache: course/stage (no language subdirectory)
+        cache_path = self.cache_dir / course_slug / stage_slug
         version_file = cache_path / ".version"
 
         # Check cache validity
@@ -78,7 +79,7 @@ class ChecksManager:
 
         # Download all checks for this course (batch download is more efficient)
         # This will populate the cache for all accessible stages
-        self.get_all_checks(course_slug, language=language, force_update=force_update)
+        self.get_all_checks(course_slug, force_update=force_update)
 
         # Now return the specific stage's cache path
         if not cache_path.exists():
@@ -111,7 +112,8 @@ class ChecksManager:
         Raises:
             APIError: If download fails
         """
-        course_cache = self.cache_dir / course_slug / language
+        # Language-agnostic cache: course/ (no language subdirectory)
+        course_cache = self.cache_dir / course_slug
         version_file = course_cache / ".course_version"
 
         # Check if we should use cache
@@ -119,10 +121,9 @@ class ChecksManager:
             # Return cached stage paths
             return self._get_cached_stages(course_cache)
 
-        # Download all checks from API (batch download)
+        # Download all checks from API (no language parameter - checks are language-agnostic)
         response = self.api.get(
-            f"/api/courses/{course_slug}/checks",
-            params={"language": language}
+            f"/api/courses/{course_slug}/checks"
         )
 
         # Write each stage to cache
@@ -280,40 +281,35 @@ class ChecksManager:
             if not course_dir.is_dir() or course_dir.name.startswith("."):
                 continue
 
-            for lang_dir in course_dir.iterdir():
-                if not lang_dir.is_dir() or lang_dir.name.startswith("."):
+            for stage_dir in course_dir.iterdir():
+                if not stage_dir.is_dir() or stage_dir.name.startswith("."):
                     continue
 
-                for stage_dir in lang_dir.iterdir():
-                    if not stage_dir.is_dir() or stage_dir.name.startswith("."):
-                        continue
+                version_file = stage_dir / ".version"
+                version = "unknown"
+                age = "unknown"
 
-                    version_file = stage_dir / ".version"
-                    version = "unknown"
-                    age = "unknown"
+                if version_file.exists():
+                    try:
+                        version = version_file.read_text().strip()
+                        age_secs = time.time() - version_file.stat().st_mtime
+                        if age_secs < 60:
+                            age = f"{int(age_secs)}s"
+                        elif age_secs < 3600:
+                            age = f"{int(age_secs / 60)}m"
+                        elif age_secs < 86400:
+                            age = f"{int(age_secs / 3600)}h"
+                        else:
+                            age = f"{int(age_secs / 86400)}d"
+                    except OSError:
+                        pass
 
-                    if version_file.exists():
-                        try:
-                            version = version_file.read_text().strip()
-                            age_secs = time.time() - version_file.stat().st_mtime
-                            if age_secs < 60:
-                                age = f"{int(age_secs)}s"
-                            elif age_secs < 3600:
-                                age = f"{int(age_secs / 60)}m"
-                            elif age_secs < 86400:
-                                age = f"{int(age_secs / 3600)}h"
-                            else:
-                                age = f"{int(age_secs / 86400)}d"
-                        except OSError:
-                            pass
-
-                    result.append({
-                        "course": course_dir.name,
-                        "language": lang_dir.name,
-                        "stage": stage_dir.name,
-                        "version": version[:8] if len(version) > 8 else version,
-                        "age": age,
-                    })
+                result.append({
+                    "course": course_dir.name,
+                    "stage": stage_dir.name,
+                    "version": version[:8] if len(version) > 8 else version,
+                    "age": age,
+                })
 
         return result
 
