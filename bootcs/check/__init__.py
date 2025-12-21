@@ -35,6 +35,9 @@ from pexpect import EOF
 # Phase 1: Language adapters
 from .adapters import LanguageAdapter, create_adapter
 
+# Phase 2: Helper functions
+from .helpers import standard_compile_check, with_adapter
+
 
 def get_adapter():
     """
