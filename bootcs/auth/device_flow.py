@@ -59,10 +59,10 @@ def start_device_flow() -> DeviceCodeResponse:
         DeviceFlowError: If the request fails.
     """
     api_base = get_api_base()
-    url = f"{api_base}/api/auth/device/code"
+    url = f"{api_base}/api/auth/device"
     
     try:
-        response = requests.post(url, timeout=30)
+        response = requests.get(url, timeout=30)
         data = response.json()
         
         # Check for error response
@@ -78,10 +78,10 @@ def start_device_flow() -> DeviceCodeResponse:
         payload = data.get("data", data)
         
         return DeviceCodeResponse(
-            device_code=payload["deviceCode"],
-            user_code=payload["userCode"],
-            verification_uri=payload["verificationUri"],
-            expires_in=payload["expiresIn"],
+            device_code=payload["device_code"],
+            user_code=payload["user_code"],
+            verification_uri=payload["verification_uri"],
+            expires_in=payload["expires_in"],
             interval=payload.get("interval", 5),
         )
     except requests.RequestException as e:
@@ -122,7 +122,7 @@ def poll_for_token(
         try:
             response = requests.post(
                 url,
-                json={"deviceCode": device_code},
+                json={"device_code": device_code},
                 timeout=30
             )
             data = response.json()
@@ -158,11 +158,14 @@ def poll_for_token(
             
             if response.ok:
                 # Success! API returns { success: true, data: {...} } format
-                # Check for data.token or direct token field
+                # Check for data.accessToken, data.access_token or token field
                 payload = data.get("data", data)
-                if "token" in payload:
+                
+                # Handle both snake_case and camelCase
+                token = payload.get("accessToken") or payload.get("access_token") or payload.get("token")
+                if token:
                     return TokenResponse(
-                        token=payload["token"],
+                        token=token,
                         user=payload.get("user", {})
                     )
                 
