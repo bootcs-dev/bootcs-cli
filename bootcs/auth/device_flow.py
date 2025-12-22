@@ -39,7 +39,7 @@ class TokenResponse:
 
 
 # Default API base URL - can be overridden via environment
-DEFAULT_API_BASE = "https://api.bootcs.cn"
+DEFAULT_API_BASE = "https://api.bootcs.dev"
 
 
 def get_api_base() -> str:
