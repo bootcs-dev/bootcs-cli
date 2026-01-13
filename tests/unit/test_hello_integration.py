@@ -26,9 +26,12 @@ class TestHelloIntegration(unittest.TestCase):
         )
         cls.test_data_dir = Path(__file__).parent.parent / "integration"
 
-        # Verify checks directory exists
+        # Skip if checks directory doesn't exist (e.g., in CI environment)
         if not cls.checks_dir.exists():
-            raise FileNotFoundError(f"Checks directory not found: {cls.checks_dir}")
+            raise unittest.SkipTest(
+                f"Checks directory not found: {cls.checks_dir}. "
+                "Skipping integration tests (not available in CI)."
+            )
 
     def setUp(self):
         """Set up for each test."""
