@@ -22,6 +22,7 @@ on:
         branches: [main]
         paths:
             - "bootcs/**"
+            - "tests/**"
             - "docker/**"
             - "pyproject.toml"
             - ".github/workflows/build-cli-image.yml"
