@@ -10,10 +10,12 @@ Licensed under GPL-3.0
 
 import pathlib as _pathlib
 
+
 # Internationalization - simplified, no locale support for now
 def _(s):
     """Translation function - returns string as-is for now."""
     return s
+
 
 _LOCAL_PATH = _pathlib.Path("~/.local/share/bootcs").expanduser().absolute()
 
@@ -29,13 +31,28 @@ def set_local_path(path):
     _LOCAL_PATH = _pathlib.Path(path).expanduser().absolute()
 
 
-from ._errors import *
-from ._api import working_area, cd, files
-from . import config
+from . import config  # noqa: E402
+from ._api import cd, files, working_area  # noqa: E402
+from ._errors import (  # noqa: E402
+    Error,
+    InvalidConfigError,
+    InvalidSlugError,
+    MissingFilesError,
+    MissingToolError,
+    TooManyFilesError,
+)
 
 __all__ = [
-    "Error", "InvalidSlugError", "MissingFilesError", "TooManyFilesError",
-    "InvalidConfigError", "MissingToolError",
-    "working_area", "cd", "files", "config",
-    "get_local_path", "set_local_path"
+    "Error",
+    "InvalidSlugError",
+    "MissingFilesError",
+    "TooManyFilesError",
+    "InvalidConfigError",
+    "MissingToolError",
+    "working_area",
+    "cd",
+    "files",
+    "config",
+    "get_local_path",
+    "set_local_path",
 ]

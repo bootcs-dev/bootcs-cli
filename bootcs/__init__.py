@@ -8,23 +8,23 @@ __version__ = "2.0.0"
 
 # 导出 check API (对齐 check50)
 from .check import (
-    exists,
-    hash,
-    include,
-    run,
-    log,
-    data,
-    import_checks,
     Failure,
     Mismatch,
     Missing,
+    data,
+    exists,
+    hash,
+    import_checks,
+    include,
+    log,
+    regex,
+    run,
 )
-from .check import regex
 from .check.runner import check
 
 __all__ = [
     "exists",
-    "hash", 
+    "hash",
     "include",
     "run",
     "log",

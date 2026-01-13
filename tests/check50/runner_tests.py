@@ -1,6 +1,3 @@
-import bootcs.check as check50
-from bootcs.check import runner as check50_runner
-
 import importlib
 import multiprocessing
 import os
@@ -9,6 +6,7 @@ import sys
 import tempfile
 import unittest
 
+from bootcs.check import runner as check50_runner
 
 CHECKS_DIRECTORY = pathlib.Path(__file__).absolute().parent / "checks"
 CHECK50_SUPPORTED_START_METHODS = ("fork", "spawn")
@@ -20,7 +18,9 @@ if sys.platform == "darwin":
 
 # Don't test forkserver under linux, serves no usecase for check50
 else:
-    SUPPORTED_START_METHODS = tuple(set(CHECK50_SUPPORTED_START_METHODS) & set(multiprocessing.get_all_start_methods()))
+    SUPPORTED_START_METHODS = tuple(
+        set(CHECK50_SUPPORTED_START_METHODS) & set(multiprocessing.get_all_start_methods())
+    )
 
 
 class TestMultiprocessingStartMethods(unittest.TestCase):
@@ -29,9 +29,11 @@ class TestMultiprocessingStartMethods(unittest.TestCase):
         os.chdir(self.working_directory.name)
 
         # Keep track of get_start_method
-        # This function gets monkey patched to ensure run_check is aware of the multiprocessing context, 
-        # without needing to explicitly pass the context to run_check.
-        # The same behavior can't be achieved by multiprocessing.set_start_method as that can only run once per program
+        # This function gets monkey patched to ensure run_check is aware of
+        # the multiprocessing context, without needing to explicitly pass
+        # the context to run_check.
+        # The same behavior can't be achieved by multiprocessing.set_start_method
+        # as that can only run once per program
         # https://docs.python.org/3/library/multiprocessing.html#contexts-and-start-methods
         self._get_start_method = multiprocessing.get_start_method()
 
@@ -52,7 +54,6 @@ class TestMultiprocessingStartMethods(unittest.TestCase):
 
         # For each available method
         for start_method in SUPPORTED_START_METHODS:
-            
             # Create a multiprocessing context for that method
             ctx = multiprocessing.get_context(start_method)
 

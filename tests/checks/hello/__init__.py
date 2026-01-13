@@ -31,4 +31,3 @@ def emma():
 def rodrigo():
     """responds to name Rodrigo"""
     get_adapter().run().stdin("Rodrigo").stdout("Rodrigo").exit(0)
-

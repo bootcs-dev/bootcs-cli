@@ -9,10 +9,9 @@ from .client import (
     APIError,
     get_api_base,
 )
-
 from .submit import (
-    submit_files,
     SubmitResult,
+    submit_files,
 )
 
 __all__ = [

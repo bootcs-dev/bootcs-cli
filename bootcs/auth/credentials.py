@@ -6,7 +6,7 @@ Stores credentials in ~/.bootcs/credentials.yaml
 
 import os
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Any, Dict, Optional
 
 import yaml
 
@@ -19,7 +19,7 @@ def get_credentials_path() -> Path:
         base_dir = Path(config_home) / "bootcs"
     else:
         base_dir = Path.home() / ".bootcs"
-    
+
     return base_dir / "credentials.yaml"
 
 
@@ -28,7 +28,7 @@ def _load_credentials() -> Dict[str, Any]:
     path = get_credentials_path()
     if not path.exists():
         return {}
-    
+
     try:
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f) or {}
@@ -40,11 +40,11 @@ def _save_credentials(data: Dict[str, Any]) -> None:
     """Save credentials to file."""
     path = get_credentials_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # Set restrictive permissions
     with open(path, "w", encoding="utf-8") as f:
         yaml.dump(data, f, default_flow_style=False)
-    
+
     # Chmod 600 for security
     os.chmod(path, 0o600)
 

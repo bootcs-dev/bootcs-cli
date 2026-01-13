@@ -6,14 +6,13 @@ Licensed under GPL-3.0
 """
 
 import os
-import platform
 import re
 import tempfile
-from pathlib import Path
 import xml.etree.cElementTree as ET
+from pathlib import Path
 
-from ._api import run, log, Failure
 from . import internal
+from ._api import Failure, log, run
 
 
 def _(s):
@@ -68,19 +67,21 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
 
     flags = CFLAGS.copy()
     flags.update(cflags)
-    flags = " ".join((f"-{flag}" + (f"={value}" if value is not True else "")).replace("_", "-")
-                     for flag, value in flags.items() if value)
+    flags = " ".join(
+        (f"-{flag}" + (f"={value}" if value is not True else "")).replace("_", "-")
+        for flag, value in flags.items()
+        if value
+    )
 
     out_flag = f" -o {exe_name} " if exe_name is not None else " "
 
     # Check for static libraries to use instead of dynamic ones
     # This avoids runtime library loading issues on different systems
-    static_lib_flags = ""
-    remaining_flags = []
-    
+    static_lib_flags = ""  # noqa: F841
+
     for flag, value in list(flags.items()) if isinstance(flags, dict) else []:
         pass  # flags is already a string at this point
-    
+
     # Parse flags string and replace -lXXX with static library paths where available
     flag_parts = flags.split()
     final_flags = []
@@ -93,7 +94,7 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
                     static_lib_flags += f" {static_lib}"
                     continue  # Skip this flag, use static lib instead
         final_flags.append(part)
-    
+
     flags = " ".join(final_flags)
 
     # Add library paths for any remaining dynamic libraries
@@ -106,14 +107,14 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
     process = run(f"{cc} {files_str}{out_flag}{flags}{lib_flags}{static_lib_flags}")
 
     # Strip out ANSI codes
-    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "",  process.stdout())
+    stdout = re.sub(r"\x1B\[[0-?]*[ -/]*[@-~]", "", process.stdout())
 
     # Log max_log_lines lines of output in case compilation fails
     if process.exitcode != 0:
         lines = stdout.splitlines()
 
         if len(lines) > max_log_lines:
-            lines = lines[:max_log_lines // 2] + lines[-(max_log_lines // 2):]
+            lines = lines[: max_log_lines // 2] + lines[-(max_log_lines // 2) :]
 
         for line in lines:
             log(line)
@@ -134,7 +135,10 @@ def valgrind(command, env={}):
     xml_file = tempfile.NamedTemporaryFile()
     internal.register.after_check(lambda: _check_valgrind(xml_file))
 
-    return run(f"valgrind --show-leak-kinds=all --xml=yes --xml-file={xml_file.name} -- {command}", env=env)
+    valgrind_cmd = (
+        f"valgrind --show-leak-kinds=all --xml=yes --xml-file={xml_file.name} -- {command}"
+    )
+    return run(valgrind_cmd, env=env)
 
 
 def _check_valgrind(xml_file):

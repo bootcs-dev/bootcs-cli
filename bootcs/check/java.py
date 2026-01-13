@@ -4,12 +4,11 @@ Java language support for bootcs check.
 Provides compile() and run() functions for Java programs.
 """
 
-import os
-import re
 import shutil
 from pathlib import Path
 
-from ._api import run as _run, log, Failure, exists
+from ._api import Failure, exists, log
+from ._api import run as _run
 
 
 def _(s):
@@ -171,6 +170,7 @@ def version():
 
     # Get java version (java -version outputs to stderr)
     import subprocess
+
     try:
         result = subprocess.run([JAVA, "-version"], capture_output=True, text=True)
         java_version = result.stderr.splitlines()[0] if result.stderr else "unknown"

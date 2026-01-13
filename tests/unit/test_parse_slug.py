@@ -3,6 +3,7 @@ Unit tests for parse_slug function (Phase 0 MVP simplification).
 """
 
 import unittest
+
 from bootcs.__main__ import parse_slug
 
 
@@ -85,7 +86,7 @@ class TestParseSlugBackwardCompatibility(unittest.TestCase):
             ("cs50/caesar", ("cs50", "caesar")),
             ("cs50/substitution", ("cs50", "substitution")),
         ]
-        
+
         for slug, expected in test_cases:
             with self.subTest(slug=slug):
                 result = parse_slug(slug)

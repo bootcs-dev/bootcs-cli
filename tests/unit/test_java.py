@@ -5,13 +5,13 @@ Unit tests for java module.
 import os
 import shutil
 import tempfile
-import pytest
 from pathlib import Path
+
+import pytest
 
 # Skip all tests if Java is not installed
 pytestmark = pytest.mark.skipif(
-    not shutil.which("javac") or not shutil.which("java"),
-    reason="Java JDK not installed"
+    not shutil.which("javac") or not shutil.which("java"), reason="Java JDK not installed"
 )
 
 

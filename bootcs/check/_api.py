@@ -4,24 +4,25 @@ BootCS Check API
 对齐 check50 的核心检查 API
 """
 
-import hashlib
 import functools
+import hashlib
 import numbers
 import os
 import shlex
 import shutil
 import signal
 import sys
-import gettext
 
 import pexpect
 from pexpect.exceptions import EOF, TIMEOUT
 
-from . import internal, regex
+from . import internal
+
 
 # 国际化 (简化版，直接返回原文)
 def _(text):
     return text
+
 
 _log = []
 internal.register.before_every(_log.clear)
@@ -235,7 +236,7 @@ class run:
             log(_("checking for EOF..."))
         else:
             output = str(output).replace("\n", "\r\n")
-            log(_("checking for output \"{}\"...").format(str_output))
+            log(_('checking for output "{}"...').format(str_output))
 
         try:
             expect(output, timeout=timeout)
@@ -246,8 +247,13 @@ class run:
             raise Mismatch(str_output, result.replace("\r\n", "\n"))
         except TIMEOUT:
             if show_timeout:
-                raise Missing(str_output, self.process.before,
-                              help=_("bootcs waited {} seconds for the output of the program").format(timeout))
+                raise Missing(
+                    str_output,
+                    self.process.before,
+                    help=_("bootcs waited {} seconds for the output of the program").format(
+                        timeout
+                    ),
+                )
             raise Missing(str_output, self.process.before)
         except UnicodeDecodeError:
             raise Failure(_("output not valid ASCII text"))
@@ -328,7 +334,10 @@ class Missing(Failure):
     """
 
     def __init__(self, missing_item, collection, help=None):
-        super().__init__(rationale=_("Did not find {} in {}").format(_raw(missing_item), _raw(collection)), help=help)
+        super().__init__(
+            rationale=_("Did not find {} in {}").format(_raw(missing_item), _raw(collection)),
+            help=help,
+        )
 
         if missing_item == EOF:
             missing_item = "EOF"
@@ -342,7 +351,9 @@ class Mismatch(Failure):
     """
 
     def __init__(self, expected, actual, help=None):
-        super().__init__(rationale=_("expected {}, not {}").format(_raw(expected), _raw(actual)), help=help)
+        super().__init__(
+            rationale=_("expected {}, not {}").format(_raw(expected), _raw(actual)), help=help
+        )
 
         if expected == EOF:
             expected = "EOF"
@@ -357,6 +368,7 @@ def hidden(failure_rationale):
     """
     Decorator that marks a check as a 'hidden' check.
     """
+
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
@@ -366,7 +378,9 @@ def hidden(failure_rationale):
                 raise Failure(failure_rationale)
             finally:
                 _log.clear()
+
         return wrapper
+
     return decorator
 
 
@@ -380,7 +394,7 @@ def _raw(s):
 
     s = f'"{repr(str(s))[1:-1]}"'
     if len(s) > 15:
-        s = s[:15] + "...\""
+        s = s[:15] + '..."'
     return s
 
 

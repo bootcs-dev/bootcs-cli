@@ -5,7 +5,6 @@ Based on check50 by CS50 (https://github.com/cs50/check50)
 Licensed under GPL-3.0
 """
 
-from pathlib import Path
 import importlib
 
 from .. import lib50
@@ -47,6 +46,7 @@ class Register:
     """
     Class with which functions can be registered to run before / after checks.
     """
+
     def __init__(self):
         self._before_everies = []
         self._after_everies = []
@@ -55,19 +55,25 @@ class Register:
     def after_check(self, func):
         """Run func once at the end of the check, then discard func."""
         if not check_running:
-            raise _exceptions.Error("cannot register callback to run after check when no check is running")
+            raise _exceptions.Error(
+                "cannot register callback to run after check when no check is running"
+            )
         self._after_checks.append(func)
 
     def after_every(self, func):
         """Run func at the end of every check."""
         if check_running:
-            raise _exceptions.Error("cannot register callback to run after every check when check is running")
+            raise _exceptions.Error(
+                "cannot register callback to run after every check when check is running"
+            )
         self._after_everies.append(func)
 
     def before_every(self, func):
         """Run func at the start of every check."""
         if check_running:
-            raise _exceptions.Error("cannot register callback to run before every check when check is running")
+            raise _exceptions.Error(
+                "cannot register callback to run before every check when check is running"
+            )
         self._before_everies.append(func)
 
     def __enter__(self):
@@ -98,11 +104,7 @@ def load_config(check_dir):
     """
 
     # Defaults for top-level keys
-    options = {
-        "checks": "__init__.py",
-        "dependencies": None,
-        "translations": None
-    }
+    options = {"checks": "__init__.py", "dependencies": None, "translations": None}
 
     # Defaults for translation keys
     translation_options = {
@@ -149,7 +151,7 @@ def import_file(name, path):
 def get_current_language():
     """
     Get the current programming language being checked.
-    
+
     Returns:
         str: Current language (e.g., 'c', 'python', 'java'), or None if not set.
     """
@@ -159,7 +161,7 @@ def get_current_language():
 def set_current_language(language):
     """
     Set the current programming language being checked.
-    
+
     Args:
         language (str): Language identifier (e.g., 'c', 'python', 'java').
     """
@@ -170,16 +172,16 @@ def set_current_language(language):
 def get_problem_name():
     """
     Extract the problem name from the current slug.
-    
+
     For slug format "{courseSlug}/{stageSlug}", returns stageSlug.
     For example: "cs50/hello" -> "hello"
-    
+
     Returns:
         str: The problem/stage name, or None if slug is not set.
     """
     if slug is None:
         return None
-    
+
     parts = slug.split("/")
     if len(parts) >= 2:
         return parts[-1]  # Return last part as problem name

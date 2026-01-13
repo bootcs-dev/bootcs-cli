@@ -3,16 +3,13 @@ Unit tests for language detection and checks management.
 """
 
 import base64
-import shutil
 import tempfile
-import time
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
-from bootcs.__main__ import detect_language, LANGUAGE_EXTENSIONS
-from bootcs.api.checks import ChecksManager, CACHE_TTL
-from bootcs.api.client import APIError
+from bootcs.__main__ import LANGUAGE_EXTENSIONS, detect_language
+from bootcs.api.checks import ChecksManager
 
 
 class TestDetectLanguage(unittest.TestCase):
@@ -105,7 +102,7 @@ class TestLanguageExtensions(unittest.TestCase):
 
     def test_all_common_extensions_covered(self):
         """MVP language extensions are mapped (c/python/java)."""
-        expected = ['.c', '.h', '.py', '.java']
+        expected = [".c", ".h", ".py", ".java"]
         for ext in expected:
             self.assertIn(ext, LANGUAGE_EXTENSIONS)
 
@@ -139,11 +136,11 @@ class TestChecksManager(unittest.TestCase):
             self.manager.get_checks("invalid-slug")
         self.assertIn("Invalid slug format", str(ctx.exception))
 
-    @patch.object(ChecksManager, 'get_all_checks')
+    @patch.object(ChecksManager, "get_all_checks")
     def test_uses_cache_when_valid(self, mock_get_all):
         """Uses cache when valid, doesn't call API."""
-        # Pre-populate cache
-        cache_path = self.cache_dir / "cs50" / "c" / "hello"
+        # Pre-populate cache (language-agnostic: cs50/hello)
+        cache_path = self.cache_dir / "cs50" / "hello"
         cache_path.mkdir(parents=True)
         (cache_path / "__init__.py").write_text("# check")
         (cache_path / ".version").write_text("abc123")
@@ -153,14 +150,21 @@ class TestChecksManager(unittest.TestCase):
         self.assertEqual(result, cache_path)
         mock_get_all.assert_not_called()
 
-    @patch.object(ChecksManager, 'get_all_checks')
+    @patch.object(ChecksManager, "get_all_checks")
     def test_force_update_ignores_cache(self, mock_get_all):
         """force_update=True ignores cache and calls API."""
-        # Pre-populate cache
-        cache_path = self.cache_dir / "cs50" / "c" / "hello"
+        # Pre-populate cache (language-agnostic: cs50/hello)
+        cache_path = self.cache_dir / "cs50" / "hello"
         cache_path.mkdir(parents=True)
         (cache_path / "__init__.py").write_text("# check")
         (cache_path / ".version").write_text("abc123")
+
+        # Mock get_all_checks to create the cache path
+        def create_cache(course_slug, force_update=False):
+            cache_path.mkdir(parents=True, exist_ok=True)
+            return {"hello": cache_path}
+
+        mock_get_all.side_effect = create_cache
 
         self.manager.get_checks("cs50/hello", language="c", force_update=True)
 
@@ -168,9 +172,9 @@ class TestChecksManager(unittest.TestCase):
 
     def test_clear_all_cache(self):
         """Clear all cache removes everything."""
-        # Create some cache
-        (self.cache_dir / "cs50" / "c" / "hello").mkdir(parents=True)
-        (self.cache_dir / "cs50" / "c" / "hello" / "test.py").touch()
+        # Create some cache (language-agnostic: cs50/hello)
+        (self.cache_dir / "cs50" / "hello").mkdir(parents=True)
+        (self.cache_dir / "cs50" / "hello" / "test.py").touch()
 
         self.manager.clear_cache()
 
@@ -179,9 +183,9 @@ class TestChecksManager(unittest.TestCase):
 
     def test_clear_course_cache(self):
         """Clear cache for specific course."""
-        # Create cache for two courses
-        (self.cache_dir / "cs50" / "c" / "hello").mkdir(parents=True)
-        (self.cache_dir / "other" / "c" / "test").mkdir(parents=True)
+        # Create cache for two courses (language-agnostic)
+        (self.cache_dir / "cs50" / "hello").mkdir(parents=True)
+        (self.cache_dir / "other" / "test").mkdir(parents=True)
 
         self.manager.clear_cache(slug="cs50")
 
@@ -195,8 +199,8 @@ class TestChecksManager(unittest.TestCase):
 
     def test_list_cache_with_entries(self):
         """List cache returns cached entries."""
-        # Create cache entry
-        cache_path = self.cache_dir / "cs50" / "c" / "hello"
+        # Create cache entry (language-agnostic: cs50/hello)
+        cache_path = self.cache_dir / "cs50" / "hello"
         cache_path.mkdir(parents=True)
         (cache_path / ".version").write_text("abc12345")
 
@@ -204,15 +208,17 @@ class TestChecksManager(unittest.TestCase):
 
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]["course"], "cs50")
-        self.assertEqual(result[0]["language"], "c")
         self.assertEqual(result[0]["stage"], "hello")
 
     def test_write_stage_cache(self):
         """Write stage cache correctly decodes base64."""
-        stage_path = self.cache_dir / "cs50" / "c" / "test"
+        stage_path = self.cache_dir / "cs50" / "test"
         files = [
             {"path": "check.py", "content": base64.b64encode(b"# test check").decode()},
-            {"path": ".bootcs.yml", "content": base64.b64encode(b"checks: check.py").decode()},
+            {
+                "path": ".bootcs.yml",
+                "content": base64.b64encode(b"checks: check.py").decode(),
+            },
         ]
 
         self.manager._write_stage_cache(stage_path, files)
@@ -234,28 +240,33 @@ class TestChecksManagerIntegration(unittest.TestCase):
         """Clean up test fixtures."""
         self.temp_dir.cleanup()
 
-    @patch('bootcs.api.checks.APIClient')
+    @patch("bootcs.api.checks.APIClient")
     def test_get_all_checks_batch_download(self, MockAPIClient):
         """get_all_checks downloads and caches all stages."""
         mock_client = MagicMock()
         mock_client.get.return_value = {
             "courseSlug": "cs50",
-            "language": "c",
             "version": "abc123",
             "checks": [
                 {
                     "stageSlug": "hello",
                     "files": [
-                        {"path": "__init__.py", "content": base64.b64encode(b"# hello").decode()},
-                    ]
+                        {
+                            "path": "__init__.py",
+                            "content": base64.b64encode(b"# hello").decode(),
+                        },
+                    ],
                 },
                 {
                     "stageSlug": "mario",
                     "files": [
-                        {"path": "__init__.py", "content": base64.b64encode(b"# mario").decode()},
-                    ]
+                        {
+                            "path": "__init__.py",
+                            "content": base64.b64encode(b"# mario").decode(),
+                        },
+                    ],
                 },
-            ]
+            ],
         }
         MockAPIClient.return_value = mock_client
 
@@ -266,9 +277,9 @@ class TestChecksManagerIntegration(unittest.TestCase):
         self.assertIn("hello", result)
         self.assertIn("mario", result)
 
-        # Verify files were written
-        self.assertTrue((self.cache_dir / "cs50" / "c" / "hello" / "__init__.py").exists())
-        self.assertTrue((self.cache_dir / "cs50" / "c" / "mario" / "__init__.py").exists())
+        # Verify files were written (language-agnostic: cs50/hello, cs50/mario)
+        self.assertTrue((self.cache_dir / "cs50" / "hello" / "__init__.py").exists())
+        self.assertTrue((self.cache_dir / "cs50" / "mario" / "__init__.py").exists())
 
 
 if __name__ == "__main__":

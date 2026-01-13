@@ -3,17 +3,18 @@ Unit tests for language adapter conventions (Phase 1).
 """
 
 import unittest
+
 from bootcs.check.adapters.conventions import (
+    NAMING_CONVENTIONS,
     c_convention,
     cpp_convention,
-    java_convention,
-    python_convention,
-    go_convention,
-    rust_convention,
-    javascript_convention,
-    typescript_convention,
     get_source_filename,
-    NAMING_CONVENTIONS,
+    go_convention,
+    java_convention,
+    javascript_convention,
+    python_convention,
+    rust_convention,
+    typescript_convention,
 )
 
 
@@ -117,7 +118,7 @@ class TestGetSourceFilename(unittest.TestCase):
             ("hello", "javascript", "hello.js"),
             ("hello", "typescript", "hello.ts"),
         ]
-        
+
         for problem, lang, expected in test_cases:
             with self.subTest(problem=problem, lang=lang):
                 result = get_source_filename(problem, lang)
@@ -130,10 +131,21 @@ class TestConventionRegistry(unittest.TestCase):
     def test_registry_contains_all_languages(self):
         """Registry contains all supported languages."""
         expected_languages = {
-            'c', 'cpp', 'c++', 'java', 'python', 'py',
-            'go', 'rust', 'rs', 'javascript', 'js', 'typescript', 'ts'
+            "c",
+            "cpp",
+            "c++",
+            "java",
+            "python",
+            "py",
+            "go",
+            "rust",
+            "rs",
+            "javascript",
+            "js",
+            "typescript",
+            "ts",
         }
-        
+
         actual_languages = set(NAMING_CONVENTIONS.keys())
         self.assertEqual(actual_languages, expected_languages)
 

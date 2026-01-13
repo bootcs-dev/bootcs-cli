@@ -13,39 +13,40 @@ def _(s):
     return s
 
 
-from ._api import (
-    import_checks,
-    data, _data,
+from pexpect import EOF  # noqa: E402
+
+from . import c, internal, java, regex  # noqa: E402
+from ._api import (  # noqa: E402
+    Failure,
+    Mismatch,
+    Missing,
+    _data,  # noqa: F401
+    _log,  # noqa: F401
+    data,
     exists,
     hash,
-    include,
-    run,
-    log, _log,
     hidden,
-    Failure, Mismatch, Missing
+    import_checks,
+    include,
+    log,
+    run,
 )
 
-from . import regex
-from . import c
-from . import java
-from . import internal
-from .runner import check
-from pexpect import EOF
-
 # Phase 1: Language adapters
-from .adapters import LanguageAdapter, create_adapter
+from .adapters import LanguageAdapter, create_adapter  # noqa: E402
 
 # Phase 2: Helper functions
-from .helpers import standard_compile_check, with_adapter
+from .helpers import standard_compile_check, with_adapter  # noqa: E402, F401
+from .runner import check  # noqa: E402
 
 
 def get_adapter():
     """
     Get language adapter for current check context.
-    
+
     Automatically retrieves problem name and language from internal state.
     Convenience function to avoid repetition in check implementations.
-    
+
     Returns:
         LanguageAdapter: Configured adapter for current problem/language
     """
@@ -54,8 +55,26 @@ def get_adapter():
     return create_adapter(problem, language)
 
 
-__all__ = ["import_checks", "data", "exists", "hash", "include", "regex",
-           "run", "log", "Failure", "Mismatch", "Missing", "check", "EOF",
-           "c", "java", "internal", "hidden",
-           # Phase 1: Adapters
-           "LanguageAdapter", "create_adapter", "get_adapter"]
+__all__ = [
+    "import_checks",
+    "data",
+    "exists",
+    "hash",
+    "include",
+    "regex",
+    "run",
+    "log",
+    "Failure",
+    "Mismatch",
+    "Missing",
+    "check",
+    "EOF",
+    "c",
+    "java",
+    "internal",
+    "hidden",
+    # Phase 1: Adapters
+    "LanguageAdapter",
+    "create_adapter",
+    "get_adapter",
+]

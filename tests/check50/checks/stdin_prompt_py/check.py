@@ -1,5 +1,6 @@
 import check50
 
+
 @check50.check()
 def prints_hello_name():
     """prints hello name"""

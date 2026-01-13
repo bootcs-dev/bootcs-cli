@@ -18,11 +18,13 @@ from .contextmanagers import nullcontext
 
 class Error(Exception):
     """Exception for internal check50 errors."""
+
     pass
 
 
 class RemoteCheckError(Error):
     """An exception for errors that happen in check50's remote operation."""
+
     def __init__(self, remote_json):
         super().__init__("check50 ran into an error while running checks! Please contact support.")
         self.payload = {"remote_json": remote_json}
@@ -58,27 +60,33 @@ class ExceptHook:
                 return
             else:
                 show_traceback = True
-                message = _("Sorry, something is wrong! bootcs ran into an error, please try again.")
+                message = _(
+                    "Sorry, something is wrong! bootcs ran into an error, please try again."
+                )
 
         # Output exception as json
         if "json" in self.outputs:
-            ctxmanager = open(self.output_file, "w") if self.output_file else nullcontext(sys.stdout)
+            ctxmanager = (
+                open(self.output_file, "w") if self.output_file else nullcontext(sys.stdout)
+            )
             with ctxmanager as output_file:
                 from . import __version__
-                json.dump({
-                    "slug": internal.slug,
-                    "error": {
-                        "type": cls.__name__,
-                        "value": str(exc),
-                        "traceback": formatted_traceback,
-                        "actions": {
-                            "show_traceback": show_traceback,
-                            "message": message
+
+                json.dump(
+                    {
+                        "slug": internal.slug,
+                        "error": {
+                            "type": cls.__name__,
+                            "value": str(exc),
+                            "traceback": formatted_traceback,
+                            "actions": {"show_traceback": show_traceback, "message": message},
+                            "data": exc.payload if hasattr(exc, "payload") else {},
                         },
-                        "data" : exc.payload if hasattr(exc, "payload") else {}
+                        "version": __version__,
                     },
-                    "version": __version__
-                }, output_file, indent=4)
+                    output_file,
+                    indent=4,
+                )
                 output_file.write("\n")
 
         # Output exception to stderr

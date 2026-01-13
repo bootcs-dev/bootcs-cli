@@ -8,14 +8,12 @@ This module handles:
 """
 
 import base64
-import os
 import shutil
 import time
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 from .client import APIClient, APIError
-
 
 # Default cache location
 DEFAULT_CACHE_DIR = Path.home() / ".bootcs" / "checks"
@@ -39,12 +37,7 @@ class ChecksManager:
         self.cache_dir = cache_dir or DEFAULT_CACHE_DIR
         self.cache_dir.mkdir(parents=True, exist_ok=True)
 
-    def get_checks(
-        self,
-        slug: str,
-        language: str = "c",
-        force_update: bool = False
-    ) -> Path:
+    def get_checks(self, slug: str, language: str = "c", force_update: bool = False) -> Path:
         """
         Get checks directory for a stage.
 
@@ -85,16 +78,16 @@ class ChecksManager:
         if not cache_path.exists():
             raise APIError(
                 code="STAGE_NOT_FOUND",
-                message=f"Stage '{stage_slug}' not found in course '{course_slug}' or not accessible"
+                message=(
+                    f"Stage '{stage_slug}' not found in course "
+                    f"'{course_slug}' or not accessible"
+                ),
             )
 
         return cache_path
 
     def get_all_checks(
-        self,
-        course_slug: str,
-        language: str = "c",
-        force_update: bool = False
+        self, course_slug: str, language: str = "c", force_update: bool = False
     ) -> Dict[str, Path]:
         """
         Download all accessible checks for a course at once.
@@ -122,16 +115,14 @@ class ChecksManager:
             return self._get_cached_stages(course_cache)
 
         # Download all checks from API (no language parameter - checks are language-agnostic)
-        response = self.api.get(
-            f"/api/courses/{course_slug}/checks"
-        )
+        response = self.api.get(f"/api/courses/{course_slug}/checks")
 
         # Write each stage to cache
         result = {}
         for stage_checks in response.get("checks", []):
             stage_slug = stage_checks["stageSlug"]
             stage_path = course_cache / stage_slug
-            
+
             self._write_stage_cache(stage_path, stage_checks["files"])
             result[stage_slug] = stage_path
 
@@ -145,8 +136,7 @@ class ChecksManager:
     def _download_checks(self, course_slug: str, stage_slug: str, language: str) -> dict:
         """Download checks from API for a single stage."""
         return self.api.get(
-            f"/api/courses/{course_slug}/stages/{stage_slug}/checks",
-            params={"language": language}
+            f"/api/courses/{course_slug}/stages/{stage_slug}/checks", params={"language": language}
         )
 
     def _is_cache_valid(self, cache_path: Path, version_file: Path) -> bool:
@@ -304,12 +294,14 @@ class ChecksManager:
                     except OSError:
                         pass
 
-                result.append({
-                    "course": course_dir.name,
-                    "stage": stage_dir.name,
-                    "version": version[:8] if len(version) > 8 else version,
-                    "age": age,
-                })
+                result.append(
+                    {
+                        "course": course_dir.name,
+                        "stage": stage_dir.name,
+                        "version": version[:8] if len(version) > 8 else version,
+                        "age": age,
+                    }
+                )
 
         return result
 
@@ -329,6 +321,7 @@ def get_checks_manager(token: Optional[str] = None) -> ChecksManager:
     if token is None:
         try:
             from ..auth import get_token, is_logged_in
+
             if is_logged_in():
                 token = get_token()
         except ImportError:

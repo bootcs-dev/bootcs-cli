@@ -6,16 +6,14 @@ Licensed under GPL-3.0
 """
 
 import contextlib
-import fnmatch
 import glob
 import os
-from pathlib import Path
 import shutil
 import tempfile
+from pathlib import Path
 
 from . import _
 from ._errors import Error, MissingFilesError, TooManyFilesError
-from . import config as lib50_config
 
 __all__ = ["working_area", "cd", "files"]
 
@@ -80,7 +78,7 @@ def _glob(pattern, limit=DEFAULT_FILE_LIMIT):
     results = set()
     for path in glob.iglob(pattern, recursive=True):
         # Skip hidden files/directories
-        if any(part.startswith('.') for part in Path(path).parts):
+        if any(part.startswith(".") for part in Path(path).parts):
             continue
         if os.path.isfile(path):
             results.add(path)
@@ -89,12 +87,14 @@ def _glob(pattern, limit=DEFAULT_FILE_LIMIT):
     return results
 
 
-def files(patterns,
-          require_tags=("require",),
-          include_tags=("include",),
-          exclude_tags=("exclude",),
-          root=".",
-          limit=DEFAULT_FILE_LIMIT):
+def files(
+    patterns,
+    require_tags=("require",),
+    include_tags=("include",),
+    exclude_tags=("exclude",),
+    root=".",
+    limit=DEFAULT_FILE_LIMIT,
+):
     """
     Based on a list of patterns determine which files should be included and excluded.
     """
@@ -117,8 +117,12 @@ def files(patterns,
 
             for pattern in patterns:
                 if not _is_relative_to(Path(pattern.value).expanduser().resolve(), Path.cwd()):
-                    raise Error(_("Cannot include/exclude paths outside the current directory, but such a path ({}) was specified.")
-                                .format(pattern.value))
+                    raise Error(
+                        _(
+                            "Cannot include/exclude paths outside the current "
+                            "directory, but such a path ({}) was specified."
+                        ).format(pattern.value)
+                    )
 
                 # Include all files that are tagged with !require
                 if pattern.tag in require_tags:

@@ -6,6 +6,7 @@ Licensed under GPL-3.0
 """
 
 import os
+
 from . import _
 
 __all__ = [
@@ -35,6 +36,7 @@ class Error(Exception):
 
 class InvalidSlugError(Error):
     """A lib50.Error signalling that a slug is invalid."""
+
     pass
 
 
@@ -48,11 +50,17 @@ class MissingFilesError(Error):
         if dir is None:
             dir = os.path.expanduser(os.getcwd())
 
-        super().__init__("{}\n{}\n{}".format(
-            _("You seem to be missing these required files:"),
-            "\n".join(files),
-            _("You are currently in: {}, did you perhaps intend another directory?".format(dir))
-        ))
+        super().__init__(
+            "{}\n{}\n{}".format(
+                _("You seem to be missing these required files:"),
+                "\n".join(files),
+                _(
+                    "You are currently in: {}, did you perhaps intend another directory?".format(
+                        dir
+                    )
+                ),
+            )
+        )
         self.payload.update(files=files, dir=dir)
 
 
@@ -65,33 +73,44 @@ class TooManyFilesError(Error):
         if dir is None:
             dir = os.path.expanduser(os.getcwd())
 
-        super().__init__("{}\n{}".format(
-            _("Looks like you are in a directory with too many (> {}) files.").format(limit),
-            _("You are currently in: {}, did you perhaps intend another directory?".format(dir))
-        ))
+        super().__init__(
+            "{}\n{}".format(
+                _("Looks like you are in a directory with too many (> {}) files.").format(limit),
+                _(
+                    "You are currently in: {}, did you perhaps intend another directory?".format(
+                        dir
+                    )
+                ),
+            )
+        )
         self.payload.update(limit=limit, dir=dir)
 
 
 class InvalidBranchError(Error):
     """A lib50.Error signalling that a branch prefix is invalid."""
+
     pass
 
 
 class InvalidConfigError(Error):
     """A lib50.Error signalling that a config is invalid."""
+
     pass
 
 
 class MissingToolError(InvalidConfigError):
     """A lib50.InvalidConfigError signalling that an entry for a tool is missing in the config."""
+
     pass
 
 
 class TimeoutError(Error):
     """A lib50.Error signalling a timeout has occured."""
+
     pass
 
 
 class ConnectionError(Error):
     """A lib50.Error signalling a connection has errored."""
+
     pass

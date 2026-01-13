@@ -10,8 +10,8 @@ import pathlib
 
 import yaml
 
-from ._errors import InvalidConfigError, Error, MissingToolError
 from . import _
+from ._errors import Error, InvalidConfigError, MissingToolError
 
 try:
     from yaml import CSafeLoader as SafeLoader
@@ -36,7 +36,7 @@ def get_config_filepath(path):
     # Check for bootcs configs first
     bootcs_yaml = path / ".bootcs.yaml" if (path / ".bootcs.yaml").exists() else None
     bootcs_yml = path / ".bootcs.yml" if (path / ".bootcs.yml").exists() else None
-    
+
     # Then check for cs50 configs
     yaml_path = path / ".cs50.yaml" if (path / ".cs50.yaml").exists() else None
     yml_path = path / ".cs50.yml" if (path / ".cs50.yml").exists() else None
@@ -53,11 +53,17 @@ def get_config_filepath(path):
     if yml_path:
         return yml_path
 
-    raise Error(_("No config file (.bootcs.yaml, .bootcs.yml, .cs50.yaml or .cs50.yml) found at {}".format(path)))
+    raise Error(
+        _(
+            "No config file (.bootcs.yaml, .bootcs.yml, .cs50.yaml or .cs50.yml) "
+            "found at {}".format(path)
+        )
+    )
 
 
 class TaggedValue:
     """A value tagged in a ``.yml`` file"""
+
     def __init__(self, value, tag):
         self.value = value
         self.tag = tag[1:] if tag.startswith("!") else tag
@@ -75,6 +81,7 @@ class Loader:
         """
         A value tagged in a .yaml file.
         """
+
         def __init__(self, value, tag, *tags):
             tag = tag if tag.startswith("!") else "!" + tag
 
@@ -90,7 +97,6 @@ class Loader:
 
         def __repr__(self):
             return f"_TaggedYamlValue(tag={self.tag}, tags={self.tags})"
-
 
     def __init__(self, tool, *global_tags, default=None):
         self._global_tags = self._ensure_exclamation(global_tags)
@@ -151,9 +157,14 @@ class Loader:
 
     def _loader(self, tags):
         """Create a yaml Loader."""
+
         class ConfigLoader(SafeLoader):
             pass
-        ConfigLoader.add_multi_constructor("", lambda loader, prefix, node: Loader._TaggedYamlValue(node.value, node.tag, *tags))
+
+        def tag_constructor(loader, prefix, node):
+            return Loader._TaggedYamlValue(node.value, node.tag, *tags)
+
+        ConfigLoader.add_multi_constructor("", tag_constructor)
         return ConfigLoader
 
     def _simplify(self, config):
@@ -184,7 +195,9 @@ class Loader:
         elif isinstance(config, Loader._TaggedYamlValue):
             tagged_value = config
             if tagged_value.tag not in tagged_value.tags:
-                raise InvalidConfigError(_("{} is not a valid tag for {}".format(tagged_value.tag, self.tool)))
+                raise InvalidConfigError(
+                    _("{} is not a valid tag for {}".format(tagged_value.tag, self.tool))
+                )
 
     def _apply_default(self, config, default):
         """Apply default value to every str in config."""

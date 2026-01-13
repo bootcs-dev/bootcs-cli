@@ -3,6 +3,7 @@ Unit tests for bootcs.check.internal module (Phase 0 additions).
 """
 
 import unittest
+
 from bootcs.check import internal
 
 
@@ -40,10 +41,10 @@ class TestLanguageManagement(unittest.TestCase):
         """Can change language multiple times."""
         internal.set_current_language("c")
         self.assertEqual(internal.get_current_language(), "c")
-        
+
         internal.set_current_language("python")
         self.assertEqual(internal.get_current_language(), "python")
-        
+
         internal.set_current_language("java")
         self.assertEqual(internal.get_current_language(), "java")
 
@@ -115,7 +116,7 @@ class TestSlugManagement(unittest.TestCase):
     def test_slug_initially_none(self):
         """Slug should be None initially (or from previous test)."""
         # Just check that we can access it
-        self.assertIsNotNone(hasattr(internal, 'slug'))
+        self.assertIsNotNone(hasattr(internal, "slug"))
 
     def test_set_slug(self):
         """Can set slug."""

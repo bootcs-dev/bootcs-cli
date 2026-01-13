@@ -1,5 +1,6 @@
 import check50
 
+
 @check50.check()
 @check50.hidden("foo")
 def check():
