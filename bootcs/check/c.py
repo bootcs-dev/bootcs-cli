@@ -104,6 +104,9 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
             lib_flags += f" -L{lib_path}"
             break  # Use first available path
 
+    # Log compilation start
+    log(_("compiling {} with {}...").format(files_str, cc))
+    
     process = run(f"{cc} {files_str}{out_flag}{flags}{lib_flags}{static_lib_flags}")
 
     # Strip out ANSI codes
@@ -117,9 +120,12 @@ def compile(*files, exe_name=None, cc=CC, max_log_lines=50, **cflags):
             lines = lines[: max_log_lines // 2] + lines[-(max_log_lines // 2) :]
 
         for line in lines:
-            log(line)
+            log(line, level="error")
 
         raise Failure("code failed to compile")
+    
+    # Log compilation success
+    log(_("compilation successful"))
 
 
 def valgrind(command, env={}):

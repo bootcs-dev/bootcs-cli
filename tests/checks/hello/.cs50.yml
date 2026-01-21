@@ -1,3 +1,5 @@
-check50:
+bootcs:
   files:
     - !include "*.c"
+    - !include "*.java"
+    - !include "*.py"

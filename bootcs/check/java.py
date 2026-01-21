@@ -97,11 +97,14 @@ def compile(*files, javac=JAVAC, classpath=None, **options):
         # Log compilation errors
         output = proc.process.before if proc.process.before else ""
         if output:
-            log(_("compilation errors:"))
+            log(_("compilation errors:"), level="error")
             for line in output.splitlines()[:20]:  # Limit error output
-                log(f"  {line}")
+                log(f"  {line}", level="error")
 
         raise Failure(_("code failed to compile. See log for details."))
+    
+    # Log compilation success
+    log(_("compilation successful"))
 
     return proc
 

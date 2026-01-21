@@ -12,6 +12,7 @@ import shlex
 import shutil
 import signal
 import sys
+import time
 
 import pexpect
 from pexpect.exceptions import EOF, TIMEOUT
@@ -24,20 +25,72 @@ def _(text):
     return text
 
 
+# ============================================================================
+# Streaming Log Support (Action Log 实时日志)
+# ============================================================================
+# When BOOTCS_STREAM_LOGS=1, logs are written to stderr in real-time
+# for the worker to capture, while stdout remains for JSON output.
+# ============================================================================
+
+_stream_enabled = os.environ.get("BOOTCS_STREAM_LOGS", "0") == "1"
+_stream_timestamps = os.environ.get("BOOTCS_STREAM_TIMESTAMPS", "1") == "1"
+
+
+def _format_stream_line(line: str, level: str = "info") -> str:
+    """Format a log line for streaming output."""
+    if _stream_timestamps:
+        ts = time.strftime("%H:%M:%S")
+        return f"[{ts}] [{level.upper():5}] {line}"
+    else:
+        return f"[{level.upper():5}] {line}"
+
+
+def _stream_log(line: str, level: str = "info"):
+    """Write a log line to stderr for real-time streaming."""
+    if _stream_enabled:
+        formatted = _format_stream_line(line, level)
+        print(formatted, file=sys.stderr, flush=True)
+
+
+def _stream_event(event_type: str, **kwargs):
+    """
+    Write a structured event to stderr for worker parsing.
+    
+    Event format: [EVENT] type key1=value1 key2=value2
+    """
+    if _stream_enabled:
+        parts = [f"[EVENT] {event_type}"]
+        for key, value in kwargs.items():
+            # Escape special characters in values
+            if isinstance(value, str):
+                value = value.replace('"', '\\"').replace('\n', '\\n')
+                parts.append(f'{key}="{value}"')
+            else:
+                parts.append(f'{key}={value}')
+        print(" ".join(parts), file=sys.stderr, flush=True)
+
+
 _log = []
 internal.register.before_every(_log.clear)
 
 
-def log(line):
+def log(line, level="info"):
     """
-    Add to check log
+    Add to check log with optional real-time streaming.
 
     :param line: line to be added to the check log
     :type line: str
+    :param level: log level (info, warn, error, debug)
+    :type level: str
 
     The check log is student-visible via the ``--log`` flag to ``bootcs check``.
+    
+    When BOOTCS_STREAM_LOGS=1 environment variable is set, logs are also
+    written to stderr in real-time for the worker to capture.
     """
-    _log.append(line.replace("\n", "\\n"))
+    escaped_line = line.replace("\n", "\\n")
+    _log.append(escaped_line)
+    _stream_log(escaped_line, level)
 
 
 _data = {}
